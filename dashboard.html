@@ -141,6 +141,10 @@ tbody tr:nth-child(even){background:rgba(249,250,251,.5)}
 .qtag{display:inline-flex;padding:2px 7px;font-size:12px;font-weight:600;border-radius:5px}
 .qtag.q1{background:#EFF6FF;color:#1D4ED8}.qtag.q2{background:#FFFBEB;color:#B45309}
 td.mut{color:var(--gray600)}
+th.sortable{cursor:pointer;user-select:none;transition:.15s}
+th.sortable:hover{color:var(--green);background:var(--gray50)}
+th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
+.tab,.ibtn,.delbtn,.lbtn,.chip{cursor:pointer}
 .delbtn{border:none;background:none;color:var(--gray400);cursor:pointer;padding:4px;
   border-radius:6px;transition:.15s}
 .delbtn:hover{background:#FEF2F2;color:#DC2626}.delbtn svg{width:15px;height:15px;display:block}
@@ -230,9 +234,10 @@ td.mut{color:var(--gray600)}
 <!-- ADD COURSE MODAL -->
 <div class="modal-bg" id="addModal">
   <div class="modal-card">
-    <div class="modal-h"><h3>Добавить курс</h3><button class="modal-x" id="addX">×</button></div>
+    <div class="modal-h"><h3 id="addTitle">Добавить курс</h3><button class="modal-x" id="addX">×</button></div>
     <div class="modal-b">
       <div class="mf"><label>Квартал</label><select id="mQ"><option value="q1">I квартал</option><option value="q2">II квартал</option></select></div>
+      <div class="mf"><label>Месяц</label><select id="mMonth"></select></div>
       <div class="mf"><label>Компания</label><select id="mComp"></select></div>
       <div class="mf full" id="newCompRow" style="display:none"><label>Новая компания</label><input id="mCompNew" placeholder="Название компании"></div>
       <div class="mf full"><label>Название курса</label><textarea id="mName"></textarea></div>
@@ -300,7 +305,7 @@ const NO_COURSE=['Зет Мобайл','Олуча','Сиёма','Сити Ла�
   'Сити Кард','Сити Сервис','Осиё Кемикал','Неру','Доро','Композит','Арвис'];
 const META={q1:{p:288,s:2300},q2:{p:294,s:65531},h1:{p:582,s:67831}};
 
-let allCourses=[], companies=[], curTab='q2', curUser=null;
+let allCourses=[], companies=[], curTab='q2', curUser=null, sortKey=null, sortDir=1, editId=null;
 const fmt=n=>Number(n||0).toLocaleString('ru-RU');
 let toastTimer;
 function toast(m,ok=true){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2500);}
@@ -346,8 +351,12 @@ async function loadData(){
   allCourses=(c||[]).map(r=>({...r,company:r.companies?.name||''}));
 }
 function filterCourses(tab){
-  if(tab==='h1')return allCourses;
-  return allCourses.filter(c=>c.quarter===tab);
+  let rows = tab==='h1'?allCourses.slice():allCourses.filter(c=>c.quarter===tab);
+  if(sortKey){rows.sort((a,b)=>{
+    let x=a[sortKey],y=b[sortKey];
+    if(typeof x==='number'||typeof y==='number'){x=Number(x)||0;y=Number(y)||0;return (x-y)*sortDir;}
+    return String(x||'').localeCompare(String(y||''),'ru')*sortDir;});}
+  return rows;
 }
 
 // ── RENDER ──
@@ -367,7 +376,7 @@ function renderTab(tab){
 
 function kpiCards(tab,rows){
   const comps=new Set(rows.map(r=>r.company)).size;
-  const cost=META[tab].s;const parts=META[tab].p;
+  const cost=rows.reduce((a,r)=>a+(Number(r.cost_num)||0),0);const parts=META[tab].p;
   const n=rows.length;
   return `<div class="kpi-grid">${[
     ['book',fmt(n),'Кол-во проведённых курсов'],
@@ -382,10 +391,10 @@ function h1Extras(){
   const cmp=`<div class="cmp-grid">
     <div class="cmp"><div class="cmp-h"><span class="qbadge b">I квартал</span><span style="font-size:14px;color:var(--gray500)">Январь — Март</span></div>
       <div class="cmp-3"><div><div class="cv">${q1.length}</div><div class="cl">курсов</div></div><div><div class="cv">${META.q1.p}</div><div class="cl">участников</div></div><div><div class="cv">${new Set(q1.map(r=>r.company)).size}</div><div class="cl">компаний</div></div></div>
-      <div class="cmp-sum">Сумма: <b>${fmt(META.q1.s)} c</b></div></div>
+      <div class="cmp-sum">Сумма: <b>${fmt(q1.reduce((a,r)=>a+(Number(r.cost_num)||0),0))} c</b></div></div>
     <div class="cmp"><div class="cmp-h"><span class="qbadge a">II квартал</span><span style="font-size:14px;color:var(--gray500)">Апрель — Июнь</span></div>
       <div class="cmp-3"><div><div class="cv">${q2.length}</div><div class="cl">курсов</div></div><div><div class="cv">${META.q2.p}</div><div class="cl">участников</div></div><div><div class="cv">${new Set(q2.map(r=>r.company)).size}</div><div class="cl">компаний</div></div></div>
-      <div class="cmp-sum">Сумма: <b>${fmt(META.q2.s)} c</b></div></div></div>`;
+      <div class="cmp-sum">Сумма: <b>${fmt(q2.reduce((a,r)=>a+(Number(r.cost_num)||0),0))} c</b></div></div></div>`;
   const byComp={};allCourses.forEach(r=>{if(!byComp[r.company])byComp[r.company]={q1:0,q2:0};byComp[r.company][r.quarter]++;});
   const sorted=Object.entries(byComp).sort((a,b)=>(b[1].q1+b[1].q2)-(a[1].q1+a[1].q2));
   const maxTot=Math.max(...sorted.map(([,v])=>v.q1+v.q2),1);
@@ -407,7 +416,7 @@ function planWidget(){
       <circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="#E5E7EB" stroke-width="26"/>
       <circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="#66B67A" stroke-width="26"
         stroke-dasharray="${(frac*len).toFixed(1)} ${len}" transform="rotate(-90 ${C} ${C})"/></svg>
-      <div class="donut-center"><div class="pc">${pct}%</div><div class="pl">выполнено</div></div></div></div>
+      <div class="donut-center"><div><div class="pc">${pct}%</div><div class="pl">выполнено</div></div></div></div></div>
     <div class="plan-stats">
       <div class="pstat g"><div><div class="pl">План на 2026 год</div><div class="pv">${total}</div></div><div class="pcircle g"><svg viewBox="0 0 24 24">${ICONS.book}</svg></div></div>
       <div class="pstat g done"><div><div class="pl">Выполнено</div><div class="pv">${done}</div></div><div class="pcircle g">${check}</div></div>
@@ -418,34 +427,27 @@ function planWidget(){
 
 function monthChart(tab){
   const rows=filterCourses(tab);
-  const months=tab==='h1'?['Январь','Февраль','Март','Апрель','Май','Июнь']:
-    tab==='q1'?['Январь','Февраль','Март']:['Апрель','Май','Июнь'];
-  const monthMap={Январь:'q1',Февраль:'q1',Март:'q1',Апрель:'q2',Май:'q2',Июнь:'q2'};
+  const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь'];
+  const idx = tab==='q1'?[1,2,3]:tab==='q2'?[4,5,6]:[1,2,3,4,5,6];
   const compSet=[...new Set(rows.map(r=>r.company))].filter(Boolean);
-  // Build data by month (use created_at month or distribute evenly for demo)
-  const data=months.map(m=>{
-    const d={month:m};
-    compSet.forEach(c=>{
-      const cnt=rows.filter(r=>r.company===c&&(r.month_name===m||!r.month_name)).length;
-      d[c]=0;});
-    // distribute courses across months proportionally
-    rows.forEach(r=>{
-      const mi=r.month_index;
-      if(mi!=null&&months[mi-1]===m)d[r.company]=(d[r.company]||0)+1;
-    });
+  const data=idx.map(mi=>{
+    const d={month:MONTHS[mi-1]};
+    compSet.forEach(c=>d[c]=rows.filter(r=>r.company===c&&r.month_index===mi).length);
     return d;});
-  // Fallback: divide by months count
   const W=1060,H=340,mL=40,mR=20,mT=20,mB=34,iw=W-mL-mR,ih=H-mT-mB;
   let max=0;data.forEach(d=>compSet.forEach(c=>{if(d[c]>max)max=d[c];}));
-  if(max===0){compSet.forEach(c=>{const cnt=rows.filter(r=>r.company===c).length;data.forEach(d=>{d[c]=Math.floor(cnt/months.length);});});data.forEach(d=>compSet.forEach(c=>{if(d[c]>max)max=d[c];}));}
-  max=Math.max(max,1);const top=Math.ceil(max);
-  const ticks=[];for(let t=0;t<=top;t+=Math.max(1,Math.ceil(top/4)))ticks.push(t);if(ticks[ticks.length-1]<top)ticks.push(top);
+  max=Math.max(max,1);
+  const step=Math.max(1,Math.ceil(max/4));const ticks=[];
+  for(let t=0;t<=max;t+=step)ticks.push(t);
+  if(ticks[ticks.length-1]<max)ticks.push(ticks[ticks.length-1]+step);
   const topV=ticks[ticks.length-1],y=v=>mT+ih-(v/topV)*ih,gW=iw/data.length;
   let s=`<svg viewBox="0 0 ${W} ${H}" class="chart-svg">`;
   ticks.forEach(t=>{const yy=y(t);s+=`<line x1="${mL}" y1="${yy}" x2="${W-mR}" y2="${yy}" stroke="#E5E7EB" stroke-dasharray="3 3"/><text x="${mL-7}" y="${yy+4}" text-anchor="end" font-size="12" fill="#6B7280" font-family="Inter">${t}</text>`;});
-  data.forEach((d,mi)=>{const pr=compSet.filter(c=>d[c]>0),n=pr.length||1,pad=gW*0.15,bw=Math.min(30,(gW-pad*2)/n-4),gw=(bw+4)*n-4,x0=mL+mi*gW+(gW-gw)/2;
+  data.forEach((d,mi)=>{
+    const pr=compSet.filter(c=>d[c]>0),n=pr.length||1;
+    const pad=gW*0.12,bw=Math.min(26,(gW-pad*2)/n-4),gw=(bw+4)*n-4,x0=mL+mi*gW+(gW-gw)/2;
     pr.forEach((c,ci)=>{const bx=x0+ci*(bw+4),bh=(d[c]/topV)*ih,by=mT+ih-bh,col=COMPANY_COLORS[c]||'#9CA3AF';
-      s+=`<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" rx="5" fill="${col}"><title>${c}: ${d[c]}</title></rect>`;});
+      s+=`<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" rx="4" fill="${col}"><title>${c} · ${d.month}: ${d[c]}</title></rect>`;});
     s+=`<text x="${mL+mi*gW+gW/2}" y="${H-12}" text-anchor="middle" font-size="12" fill="#6B7280" font-family="Inter">${d.month}</text>`;});
   s+=`<line x1="${mL}" y1="${mT+ih}" x2="${W-mR}" y2="${mT+ih}" stroke="#E5E7EB"/></svg>`;
   const legend=`<div class="legend">${compSet.map(c=>`<span><i style="background:${COMPANY_COLORS[c]||'#9CA3AF'}"></i>${c}</span>`).join('')}</div>`;
@@ -462,14 +464,17 @@ function courseTable(tab,rows){
     <td><span class="fbadge ${r.format==='Офлайн'?'off':'on'}">${r.format||''}</span></td>
     <td>${r.participants||0}</td><td class="mut">${r.duration||''}</td>
     <td>${r.cost_raw||''}</td><td class="mut">${r.category||''}</td>
-    <td><button class="delbtn" data-del="${r.id}" title="Удалить"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v12a1 1 0 01-1 1H8a1 1 0 01-1-1V7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button></td></tr>`).join('');
+    <td style="white-space:nowrap">
+      <button class="delbtn" data-edit="${r.id}" title="Редактировать"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20h4l10-10a2.8 2.8 0 10-4-4L4 16v4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></button>
+      <button class="delbtn" data-del="${r.id}" title="Удалить"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m2 0v12a1 1 0 01-1 1H8a1 1 0 01-1-1V7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+    </td></tr>`).join('');
   return `<div class="card"><div class="tbl-head"><h3>Общий список курсов</h3>
     <div class="tbl-tools">
       <input id="tsearch" placeholder="Поиск…">
       <span class="tc">Всего курсов: ${rows.length} | Всего участников: ${fmt(totalP)}</span>
       <button class="ibtn pri" id="openAddBtn"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Добавить курс</button>
     </div></div>
-    <div class="tbl-scroll"><table><thead><tr><th>№</th>${wq?'<th>Кв.</th>':''}<th>Компания</th><th>Название курса</th><th>Формат</th><th>Участники</th><th>Длительность</th><th>Стоимость</th><th>Категория</th><th></th></tr></thead>
+    <div class="tbl-scroll"><table><thead><tr><th>№</th>${wq?'<th class="sortable" data-sort="quarter">Кв.</th>':''}<th class="sortable" data-sort="company">Компания</th><th class="sortable" data-sort="course_name">Название курса</th><th class="sortable" data-sort="format">Формат</th><th class="sortable" data-sort="participants">Участники</th><th>Длительность</th><th class="sortable" data-sort="cost_num">Стоимость</th><th class="sortable" data-sort="category">Категория</th><th></th></tr></thead>
     <tbody>${body}</tbody></table></div></div>`;
 }
 
@@ -478,6 +483,11 @@ function wireTable(){
     const q=e.target.value.toLowerCase();
     document.querySelectorAll('#root tbody tr').forEach(tr=>tr.style.display=tr.innerText.toLowerCase().includes(q)?'':'none');});
   document.getElementById('openAddBtn')?.addEventListener('click',openAdd);
+  document.querySelectorAll('th.sortable').forEach(th=>th.addEventListener('click',()=>{
+    const k=th.dataset.sort;
+    if(sortKey===k)sortDir=-sortDir;else{sortKey=k;sortDir=1;}
+    renderTab(curTab);}));
+  document.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>openEdit(+b.dataset.edit)));
   document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{
     if(!confirm('Удалить курс?'))return;
     const {error}=await sb.from('courses').delete().eq('id',+b.dataset.del);
@@ -487,12 +497,45 @@ function wireTable(){
   }));
 }
 
-// ── ADD MODAL ──
-function openAdd(){
+// ── ADD / EDIT MODAL ──
+const MONTHS_ALL=['Январь','Февраль','Март','Апрель','Май','Июнь'];
+function fillMonths(q,sel){
+  const el=document.getElementById('mMonth');
+  const idx=q==='q1'?[1,2,3]:[4,5,6];
+  el.innerHTML=idx.map(i=>`<option value="${i}">${MONTHS_ALL[i-1]}</option>`).join('');
+  if(sel)el.value=sel;
+}
+document.getElementById('mQ').addEventListener('change',e=>fillMonths(e.target.value));
+function fillCompanySelect(sel){
+  const el=document.getElementById('mComp');
+  el.innerHTML=companies.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')+'<option value="__new__">+ Новая компания…</option>';
+  if(sel)el.value=sel;
+}
+function openEdit(id){
+  const r=allCourses.find(c=>c.id===id);if(!r)return;
+  editId=id;
+  document.getElementById('addTitle').textContent='Редактировать курс';
   document.getElementById('addErr').textContent='';
-  document.getElementById('mQ').value=curTab==='h1'?'q2':curTab;
-  const sel=document.getElementById('mComp');
-  sel.innerHTML=companies.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')+'<option value="__new__">+ Новая компания…</option>';
+  document.getElementById('mQ').value=r.quarter;
+  fillMonths(r.quarter,r.month_index);
+  fillCompanySelect(r.company_id);
+  document.getElementById('newCompRow').style.display='none';
+  document.getElementById('mName').value=r.course_name||'';
+  document.getElementById('mFmt').value=r.format||'Офлайн';
+  document.getElementById('mPart').value=r.participants||0;
+  document.getElementById('mDur').value=r.duration||'';
+  document.getElementById('mCost').value=r.cost_raw||'';
+  document.getElementById('mCat').value=r.category||'';
+  document.getElementById('addModal').classList.add('show');
+}
+function openAdd(){
+  editId=null;
+  document.getElementById('addTitle').textContent='Добавить курс';
+  document.getElementById('addErr').textContent='';
+  const q=curTab==='h1'?'q2':curTab;
+  document.getElementById('mQ').value=q;
+  fillMonths(q);
+  fillCompanySelect();
   ['mName','mDur','mCat','mCompNew'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('mPart').value=0;document.getElementById('mCost').value='Бесплатно';
   document.getElementById('mFmt').value='Офлайн';document.getElementById('newCompRow').style.display='none';
@@ -505,30 +548,48 @@ document.getElementById('addX').onclick=closeAdd;
 document.getElementById('addCancel').onclick=closeAdd;
 document.getElementById('addModal').onclick=e=>{if(e.target===document.getElementById('addModal'))closeAdd();};
 document.getElementById('addSave').onclick=async()=>{
+  const btn=document.getElementById('addSave');
+  const err=document.getElementById('addErr');err.textContent='';
   const q=document.getElementById('mQ').value;
   let compId=document.getElementById('mComp').value,compName='';
-  const err=document.getElementById('addErr');
   if(compId==='__new__'){
     const newName=document.getElementById('mCompNew').value.trim();
-    if(!newName){err.textContent='Укажите компанию';return;}
+    if(!newName){err.textContent='Укажите название компании';return;}
+    btn.disabled=true;
     const {data:nc,error:ce}=await sb.from('companies').insert({name:newName}).select().single();
+    btn.disabled=false;
     if(ce){err.textContent='Ошибка: '+ce.message;return;}
-    companies.push(nc);compId=nc.id;compName=newName;
+    companies.push(nc);companies.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+    compId=nc.id;compName=newName;
   }else{compName=companies.find(c=>c.id==compId)?.name||'';}
   const name=document.getElementById('mName').value.trim();
   if(!name){err.textContent='Укажите название курса';return;}
-  const costRaw=document.getElementById('mCost').value.trim();
-  const costNum=/беспл/i.test(costRaw)?0:(parseFloat(costRaw.replace(/[^\d.]/g,''))||null);
-  const {data:nc2,error:ce2}=await sb.from('courses').insert({
-    quarter:q,company_id:compId,course_name:name,format:document.getElementById('mFmt').value,
+  const costRaw=document.getElementById('mCost').value.trim()||'—';
+  const costNum=/беспл/i.test(costRaw)?0:(parseFloat(costRaw.replace(/[^\d.,]/g,'').replace(',','.'))||null);
+  const payload={
+    quarter:q,company_id:Number(compId),course_name:name,
+    format:document.getElementById('mFmt').value,
     participants:parseInt(document.getElementById('mPart').value)||0,
     duration:document.getElementById('mDur').value.trim(),
-    cost_raw:costRaw,cost_num:costNum,category:document.getElementById('mCat').value.trim(),
-    created_by:curUser.id
-  }).select('*,companies(name)').single();
-  if(ce2){err.textContent='Ошибка: '+ce2.message;return;}
-  allCourses.push({...nc2,company:nc2.companies?.name||compName});
-  closeAdd();renderTab(q);toast('✅ Курс добавлен и сохранён в базу');
+    cost_raw:costRaw,cost_num:costNum,
+    category:document.getElementById('mCat').value.trim(),
+    month_index:Number(document.getElementById('mMonth').value)||null
+  };
+  btn.disabled=true;btn.textContent='Сохранение…';
+  let res;
+  if(editId){
+    res=await sb.from('courses').update(payload).eq('id',editId).select('*,companies(name)').single();
+  }else{
+    res=await sb.from('courses').insert({...payload,created_by:curUser.id}).select('*,companies(name)').single();
+  }
+  btn.disabled=false;btn.textContent='Сохранить';
+  if(res.error){err.textContent='Ошибка: '+res.error.message;return;}
+  const row={...res.data,company:res.data.companies?.name||compName};
+  if(editId){allCourses=allCourses.map(c=>c.id===editId?row:c);}
+  else{allCourses.push(row);}
+  const wasEdit=!!editId;editId=null;
+  closeAdd();renderTab(curTab);
+  toast(wasEdit?'Изменения сохранены в базу':'Курс добавлен и сохранён в базу');
 };
 
 // ── ACCOUNT MODAL ──
