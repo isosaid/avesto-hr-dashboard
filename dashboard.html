@@ -363,6 +363,17 @@ async function enterApp(user){
     b.classList.add('on');renderTab(b.dataset.tab);});
   await loadData();
   renderTab('q2');
+  if(allCourses.length===0){
+    const bar=document.createElement('div');
+    bar.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:120';
+    bar.textContent='База пуста — загружаю данные отчёта…';document.body.appendChild(bar);
+    try{
+      const {done,useMonth}=await seedDatabase((d,t)=>bar.textContent=`Загрузка данных отчёта: ${d} из ${t}…`);
+      renderTab(curTab);
+      bar.textContent=`Загружено ${done} курсов`+(useMonth?'':' (без месяцев — выполните alter_quarters.sql)');
+    }catch(e){bar.style.background='#DC2626';bar.textContent='Не удалось загрузить данные: '+(e.message||e);}
+    setTimeout(()=>bar.remove(),4000);
+  }
 }
 
 // ── DATA ──
@@ -370,7 +381,18 @@ async function loadData(){
   const {data:comp}=await sb.from('companies').select('*').order('name');
   companies=comp||[];
   const {data:c}=await sb.from('courses').select('*,companies(name)').order('id');
-  allCourses=(c||[]).map(r=>({...r,company:r.companies?.name||''}));
+  const seedMonth={};SEED.rows.forEach(r=>{seedMonth[r.q+'|'+r.n]=r.m;});
+  const counter={};
+  allCourses=(c||[]).map(r=>{
+    let mi=r.month_index;
+    if(!mi){
+      mi=seedMonth[r.quarter+'|'+r.course_name];
+      if(!mi){const base=(QUARTER_MONTHS[r.quarter]||[1])[0];
+        counter[r.quarter]=(counter[r.quarter]||0)+1;
+        mi=base+((counter[r.quarter]-1)%3);}
+    }
+    return {...r,company:r.companies?.name||'',month_index:mi};
+  });
 }
 function filterCourses(tab){
   const qs=PERIOD_QUARTERS[tab]||[tab];
@@ -628,37 +650,50 @@ document.getElementById('addSave').onclick=async()=>{
 };
 
 // ── SEED IMPORT ──
+async function insertChunks(payload,onProgress){
+  let done=0,useMonth=true;
+  for(let i=0;i<payload.length;i+=25){
+    let chunk=payload.slice(i,i+25);
+    if(!useMonth)chunk=chunk.map(({month_index,...r})=>r);
+    let {error}=await sb.from('courses').insert(chunk);
+    if(error&&/month_index/i.test(error.message||'')){
+      useMonth=false;
+      chunk=chunk.map(({month_index,...r})=>r);
+      ({error}=await sb.from('courses').insert(chunk));
+    }
+    if(error)throw error;
+    done+=chunk.length;onProgress&&onProgress(done,payload.length);
+  }
+  return {done,useMonth};
+}
+async function seedDatabase(onProgress){
+  // ensure companies
+  const {data:existing}=await sb.from('companies').select('*');
+  companies=existing||[];
+  for(const name of SEED.companies){
+    if(!companies.find(c=>c.name===name)){
+      const {data,error}=await sb.from('companies').insert({name}).select().single();
+      if(!error&&data)companies.push(data);
+    }
+  }
+  const byName={};companies.forEach(c=>byName[c.name]=c.id);
+  const payload=SEED.rows.map(r=>({quarter:r.q,company_id:byName[r.c],course_name:r.n,format:r.f,
+    participants:r.p,duration:r.d,cost_raw:r.cr,cost_num:r.cn,category:r.cat,month_index:r.m,
+    created_by:curUser?.id}));
+  const res=await insertChunks(payload,onProgress);
+  await loadData();
+  return res;
+}
 async function runSeed(){
   const btn=document.getElementById('seedBtn'),msg=document.getElementById('seedMsg');
-  if(!confirm('Загрузить 81 курс из отчёта? Текущие курсы в базе будут заменены.'))return;
+  if(allCourses.length&&!confirm('В базе уже есть курсы. Заменить их данными отчёта (81 курс)?'))return;
   btn.disabled=true;msg.style.color='var(--gray500)';msg.textContent='Импорт…';
   try{
-    // companies
-    for(const name of SEED.companies){
-      if(!companies.find(c=>c.name===name)){
-        const {data,error}=await sb.from('companies').insert({name}).select().single();
-        if(!error&&data)companies.push(data);
-      }
-    }
-    const {data:freshComp}=await sb.from('companies').select('*');
-    if(freshComp)companies=freshComp;
-    const byName={};companies.forEach(c=>byName[c.name]=c.id);
-    // clear old
-    msg.textContent='Очистка старых записей…';
-    await sb.from('courses').delete().neq('id',-1);
-    // insert in batches
-    const payload=SEED.rows.map(r=>({quarter:r.q,company_id:byName[r.c],course_name:r.n,format:r.f,
-      participants:r.p,duration:r.d,cost_raw:r.cr,cost_num:r.cn,category:r.cat,month_index:r.m,
-      created_by:curUser.id}));
-    let done=0;
-    for(let i=0;i<payload.length;i+=30){
-      const chunk=payload.slice(i,i+30);
-      const {error}=await sb.from('courses').insert(chunk);
-      if(error)throw error;
-      done+=chunk.length;msg.textContent=`Загружено ${done} из ${payload.length}…`;
-    }
-    await loadData();renderTab(curTab);
-    msg.style.color='#16A34A';msg.textContent=`Готово: ${done} курсов сохранено в базу`;
+    if(allCourses.length){msg.textContent='Очистка старых записей…';await sb.from('courses').delete().neq('id',-1);}
+    const {done,useMonth}=await seedDatabase((d,t)=>msg.textContent=`Загружено ${d} из ${t}…`);
+    renderTab(curTab);
+    msg.style.color='#16A34A';
+    msg.textContent=`Готово: ${done} курсов в базе`+(useMonth?'':' (без разбивки по месяцам — выполните alter_quarters.sql)');
     document.getElementById('dbCount').textContent=allCourses.length;
     toast('Данные отчёта загружены в базу');
   }catch(e){msg.style.color='#DC2626';msg.textContent='Ошибка: '+(e.message||e);}
