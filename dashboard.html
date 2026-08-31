@@ -247,7 +247,7 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
 <div id="app" style="display:none">
 <nav>
   <div class="nav-in">
-    <span class="nav-label">Обучение персонала <b style="font-weight:600;color:var(--green);font-size:11px">v5</b></span>
+    <span class="nav-label">Обучение персонала <b style="font-weight:600;color:var(--green);font-size:11px">v6</b></span>
     <button class="tab" data-tab="q1"><span class="t">I квартал</span><span class="s">Янв — Мар 2026</span></button>
     <button class="tab on" data-tab="q2"><span class="t">II квартал</span><span class="s">Апр — Июн 2026</span></button>
     <button class="tab" data-tab="q3"><span class="t">III квартал</span><span class="s">Июл — Сен 2026</span></button>
@@ -255,6 +255,7 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
     <button class="tab" data-tab="h1"><span class="t">Полугодие</span><span class="s">Янв — Июн 2026</span></button>
     <button class="tab" data-tab="year"><span class="t">Год</span><span class="s">2026</span></button>
     <div class="nav-right">
+      <select id="yearSel" class="ibtn" style="padding:8px 10px;font-weight:600" title="Год отчёта"></select>
       <span class="nav-user" id="navUser"></span>
       <button class="ibtn" id="acctBtn"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c0-3.6 3-6 7-6s7 2.4 7 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Аккаунт</span></button>
       <button class="ibtn" id="logoutBtn"><svg viewBox="0 0 24 24" fill="none"><path d="M15 17l5-5-5-5M20 12H9M9 4H6a2 2 0 00-2 2v12a2 2 0 002 2h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Выйти</span></button>
@@ -269,6 +270,7 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
   <div class="modal-card">
     <div class="modal-h"><h3 id="addTitle">Добавить курс</h3><button class="modal-x" id="addX">×</button></div>
     <div class="modal-b">
+      <div class="mf"><label>Год</label><select id="mYear"></select></div>
       <div class="mf"><label>Квартал</label><select id="mQ"><option value="q1">I квартал (Янв–Мар)</option><option value="q2">II квартал (Апр–Июн)</option><option value="q3">III квартал (Июл–Сен)</option><option value="q4">IV квартал (Окт–Дек)</option></select></div>
       <div class="mf"><label>Месяц</label><select id="mMonth"></select></div>
       <div class="mf"><label>Компания</label><select id="mComp"></select></div>
@@ -331,7 +333,8 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
       <p style="font-size:14px;color:var(--gray600);margin-bottom:14px">База пока разрешает только I и II квартал. Чтобы сохранять III и IV квартал, выполните этот SQL один раз:</p>
       <pre id="sqlText" style="background:var(--gray50);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:12px;overflow:auto;white-space:pre-wrap;line-height:1.5">ALTER TABLE courses DROP CONSTRAINT IF EXISTS courses_quarter_check;
 ALTER TABLE courses ADD CONSTRAINT courses_quarter_check CHECK (quarter IN ('q1','q2','q3','q4'));
-ALTER TABLE courses ADD COLUMN IF NOT EXISTS month_index INTEGER;</pre>
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS month_index INTEGER;
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS year INTEGER DEFAULT 2026;</pre>
       <div style="display:flex;gap:10px;margin-top:14px">
         <button class="ibtn pri" id="copySql" style="flex:1;justify-content:center">Копировать SQL</button>
         <a class="ibtn" style="flex:1;justify-content:center;text-decoration:none" target="_blank"
@@ -350,13 +353,14 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const NEEDS = [{"need": "Управленческие навыки для Акиа Авесто", "companies": ["Акиа Авесто"], "completed": false}, {"need": "Бухгалтерский учет", "companies": ["Арвис", "Сити Сервис", "Сиёма", "Артел", "Сиёма Молл", "НЕТС", "Филизот", "Неру", "Акиа Авесто", "Олуча"], "completed": false}, {"need": "Финансовый учет", "companies": ["Арвис", "Сити Сервис", "Сиёма", "Сиёма Молл", "НЕТС", "Филизот", "Мармари", "Акиа Авесто"], "completed": false}, {"need": "Управленческий учет", "companies": [], "completed": false}, {"need": "Налоговый учет", "companies": [], "completed": false}, {"need": "MS Excel", "companies": ["Арвис", "Сити Сервис", "Артел", "Олуча"], "completed": true}, {"need": "1C бухгалтерия", "companies": ["Арвис", "Сити Сервис", "Сиёма", "Артел", "Сиёма Молл", "НЕТС", "Филизот", "Неру", "Акиа Авесто", "Олуча"], "completed": false}, {"need": "Менеджмент и управление командой", "companies": ["Арвис", "Артел", "Сиёма Молл", "НЕТС", "Zet-mobile", "Мармари", "Акиа Авесто", "Олуча"], "completed": true}, {"need": "Сервис и продажи", "companies": ["Гулистони Душанбе", "Арвис", "Сиёма Молл", "НЕТС", "Zet-mobile", "Мармари", "Комбинати орди Душанбе", "Олуча"], "completed": true}, {"need": "Корпоративная культура", "companies": ["Гулистони Душанбе", "Сиёма", "Комбинати орди Душанбе"], "completed": true}, {"need": "Английский язык", "companies": ["Гулистони Душанбе", "Арвис", "Сити Сервис", "Сиёма", "Сиёма Молл", "НЕТС", "Олуча"], "completed": false}, {"need": "Основы искусственного интеллекта", "companies": ["Сиёма Молл", "НЕТС", "Филизот", "Неру", "Акиа Авесто"], "completed": false}, {"need": "HR", "companies": ["Сити Сервис", "Сиёма Молл", "Филизот", "Олуча"], "completed": true}, {"need": "Цифровой маркетинг", "companies": ["Сиёма Молл", "Мармари", "Zet-mobile"], "completed": false}, {"need": "Охрана ТБ", "companies": ["Сиёма Молл", "НЕТС", "Мармари"], "completed": true}, {"need": "Коммуникация - тайм менеджмент", "companies": ["Арвис", "Неру", "Олуча"], "completed": false}, {"need": "Китайский язык", "companies": ["Акиа Авесто"], "completed": false}, {"need": "Геология", "companies": ["Филизот"], "completed": false}, {"need": "Ветеринария", "companies": ["Мармари"], "completed": false}, {"need": "Агрономия / зоотехника", "companies": ["Мармари"], "completed": false}, {"need": "Сис. админ", "companies": ["Олуча"], "completed": false}, {"need": "Дизайн и графика", "companies": ["Арвис", "Сиёма Молл"], "completed": false}, {"need": "Стратегическое планирование", "companies": ["Мармари"], "completed": false}];
 const SEED = {"companies": ["Jura", "Азот", "Акиа Авесто", "Анор", "Гулистони Душанбе", "ДС Банк / DC Bank", "Зет Мобайл", "Мармари", "Нетс", "Олуча", "Пайванд", "Сиёма Молл"], "rows": [{"q": "q1", "c": "Азот", "n": "Основы общей химии", "f": "Офлайн", "p": 20, "d": "8 дней (8 часов)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 1}, {"q": "q1", "c": "Азот", "n": "Классификация неорганических веществ", "f": "Офлайн", "p": 20, "d": "4 дня (8 часов)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 1}, {"q": "q1", "c": "Азот", "n": "Техника безопасности промышленной санитарии", "f": "Офлайн", "p": 20, "d": "8 дней (8 часов)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 1}, {"q": "q1", "c": "Азот", "n": "Классификация реакций химических", "f": "Офлайн", "p": 20, "d": "3 дня (6 часов)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 1}, {"q": "q1", "c": "Азот", "n": "Химические связи", "f": "Офлайн", "p": 20, "d": "2 дня (4 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 1}, {"q": "q1", "c": "Азот", "n": "Гидролиз", "f": "Офлайн", "p": 20, "d": "3 дня (6 часов)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 1}, {"q": "q1", "c": "Азот", "n": "Окислительно-восстановительная реакция", "f": "Офлайн", "p": 20, "d": "4 дня (8 часов)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 1}, {"q": "q1", "c": "Азот", "n": "Организационные мероприятия безопасности работ", "f": "Офлайн", "p": 32, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "ИТР", "m": 1}, {"q": "q1", "c": "Азот", "n": "Технические мероприятия безопасности", "f": "Офлайн", "p": 32, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "ИТР", "m": 2}, {"q": "q1", "c": "Азот", "n": "Техническая документация", "f": "Офлайн", "p": 32, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "ИТР", "m": 2}, {"q": "q1", "c": "Азот", "n": "Производство работ по предотвращению аварий", "f": "Офлайн", "p": 32, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "ИТР", "m": 2}, {"q": "q1", "c": "Азот", "n": "Пайка обмоток статоров", "f": "Офлайн", "p": 32, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "ИТР", "m": 2}, {"q": "q1", "c": "Азот", "n": "Группы электробезопасности", "f": "Офлайн", "p": 32, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "ИТР", "m": 2}, {"q": "q1", "c": "Азот", "n": "РУ-0.4 КВ и 6 КВ", "f": "Офлайн", "p": 32, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "ИТР", "m": 2}, {"q": "q1", "c": "Азот", "n": "Введение в технологическое оборудование", "f": "Офлайн", "p": 10, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Рабочий", "m": 2}, {"q": "q1", "c": "Азот", "n": "Организация работ технологического оборудования", "f": "Офлайн", "p": 10, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Рабочий", "m": 2}, {"q": "q1", "c": "Азот", "n": "Классификация ремонтов компрессорного оборудования", "f": "Офлайн", "p": 10, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Рабочий", "m": 3}, {"q": "q1", "c": "Азот", "n": "Техника безопасности, промышленная санитария", "f": "Офлайн", "p": 10, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Рабочий", "m": 3}, {"q": "q1", "c": "Азот", "n": "Слесарное дело", "f": "Офлайн", "p": 10, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Рабочий", "m": 3}, {"q": "q1", "c": "Азот", "n": "Основы общей технологии металлов", "f": "Офлайн", "p": 10, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Рабочий", "m": 3}, {"q": "q1", "c": "Азот", "n": "Чтение чертежей", "f": "Офлайн", "p": 10, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Рабочий", "m": 3}, {"q": "q1", "c": "Азот", "n": "Понятие о допусках и посадках", "f": "Офлайн", "p": 10, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Рабочий", "m": 3}, {"q": "q1", "c": "Азот", "n": "Повторение и учет знаний", "f": "Офлайн", "p": 10, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Рабочий", "m": 3}, {"q": "q1", "c": "Анор", "n": "Вводное обучение и адаптация", "f": "Онлайн", "p": 6, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 1}, {"q": "q1", "c": "Анор", "n": "Система SBMS/CRM, тарифы и услуги", "f": "Офлайн", "p": 5, "d": "3 дня (15 часов)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 1}, {"q": "q1", "c": "Анор", "n": "Инструктаж по противопожарной безопасности", "f": "Онлайн", "p": 6, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 2}, {"q": "q1", "c": "Анор", "n": "Инструктаж по охране труда и ТБ", "f": "Онлайн", "p": 6, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 3}, {"q": "q1", "c": "ДС Банк / DC Bank", "n": "Конфиденциальность данных, продукты банка", "f": "Офлайн", "p": 1, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Стажёр", "m": 1}, {"q": "q1", "c": "ДС Банк / DC Bank", "n": "Стандарты общения, работа с возражениями", "f": "Офлайн", "p": 14, "d": "1 день (3 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Консультант", "m": 1}, {"q": "q1", "c": "ДС Банк / DC Bank", "n": "Конфиденциальность данных, продукты банка", "f": "Офлайн", "p": 1, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Стажёр", "m": 2}, {"q": "q1", "c": "ДС Банк / DC Bank", "n": "Конфиденциальность данных, продукты банка", "f": "Офлайн", "p": 1, "d": "1 день (1 час)", "cr": "Бесплатно", "cn": 0, "cat": "Стажёр", "m": 2}, {"q": "q1", "c": "ДС Банк / DC Bank", "n": "Оценка мотивированности персонала", "f": "Офлайн", "p": 14, "d": "2 дня (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Консультант", "m": 3}, {"q": "q1", "c": "Зет Мобайл", "n": "Welcome", "f": "Офлайн", "p": 9, "d": "1 день (4 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Оператор", "m": 1}, {"q": "q1", "c": "Зет Мобайл", "n": "Оператор колл-центра", "f": "Офлайн", "p": 10, "d": "10 дней (80 часов)", "cr": "Бесплатно", "cn": 0, "cat": "Новичок", "m": 1}, {"q": "q1", "c": "Зет Мобайл", "n": "ITIL Foundation", "f": "Офлайн", "p": 15, "d": "1 день (4 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Тех. дирекция", "m": 1}, {"q": "q1", "c": "Зет Мобайл", "n": "Excel", "f": "Офлайн", "p": 4, "d": "8 дней (23 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Оператор", "m": 1}, {"q": "q1", "c": "Зет Мобайл", "n": "Продавец-консультант", "f": "Офлайн", "p": 10, "d": "2 дня (8 часов)", "cr": "Бесплатно", "cn": 0, "cat": "Сотрудник", "m": 2}, {"q": "q1", "c": "Зет Мобайл", "n": "Финансовая дисциплина", "f": "Офлайн", "p": 40, "d": "1 день (3 часа)", "cr": "Бесплатно", "cn": 0, "cat": "ТАКОМ", "m": 2}, {"q": "q1", "c": "Зет Мобайл", "n": "Excel", "f": "Офлайн", "p": 5, "d": "8 дней (23 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Руководитель", "m": 2}, {"q": "q1", "c": "Зет Мобайл", "n": "НЭОК", "f": "Офлайн", "p": 15, "d": "1 день (4 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Оператор", "m": 3}, {"q": "q1", "c": "Зет Мобайл", "n": "Help Desk", "f": "Офлайн", "p": 10, "d": "1 день (4 часа)", "cr": "Бесплатно", "cn": 0, "cat": "ТАКОМ", "m": 3}, {"q": "q1", "c": "Зет Мобайл", "n": "Анор", "f": "Офлайн", "p": 12, "d": "1 день (4 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Колл-центр", "m": 3}, {"q": "q1", "c": "Олуча", "n": "Эффективная работа с приложением", "f": "Офлайн", "p": 1, "d": "6 месяцев", "cr": "Бесплатно", "cn": 0, "cat": "Специалист ПО", "m": 1}, {"q": "q1", "c": "Олуча", "n": "Эффективная работа с приложением", "f": "Офлайн", "p": 1, "d": "7 месяцев", "cr": "Бесплатно", "cn": 0, "cat": "Специалист ПО", "m": 2}, {"q": "q1", "c": "Сиёма Молл", "n": "Как управлять большой командой", "f": "Офлайн", "p": 12, "d": "1 день (3 часа)", "cr": "300 c", "cn": 300.0, "cat": "Управление", "m": 2}, {"q": "q1", "c": "Сиёма Молл", "n": "Управление персоналом", "f": "Офлайн", "p": 1, "d": "24 часа", "cr": "1000 c", "cn": 1000.0, "cat": "HR", "m": 3}, {"q": "q1", "c": "Пайванд", "n": "Системный подход к стратегии: управление организационными изменениями", "f": "Офлайн", "p": 1, "d": "1 день", "cr": "400 c", "cn": 400.0, "cat": "Сардори шўъба", "m": 1}, {"q": "q1", "c": "Пайванд", "n": "Увеличение роли комплаенса в международной торговле", "f": "Офлайн", "p": 1, "d": "2 дня (9:30-16:45)", "cr": "600 c", "cn": 600.0, "cat": "Комплаенс", "m": 1}, {"q": "q1", "c": "Пайванд", "n": "Увеличение роли комплаенса в международной торговле", "f": "Офлайн", "p": 1, "d": "2 дня (9:30-17:15)", "cr": "Бесплатно", "cn": 0, "cat": "Комплаенс", "m": 1}, {"q": "q1", "c": "Пайванд", "n": "Безопасное цифровое будущее: от государства до бизнеса", "f": "Офлайн", "p": 1, "d": "1 день (9:30-16:45)", "cr": "Бесплатно", "cn": 0, "cat": "Муовини директор", "m": 1}, {"q": "q1", "c": "Пайванд", "n": "Корхои фахмондади", "f": "Офлайн", "p": 2, "d": "1 день (13:00-15:00)", "cr": "Бесплатно", "cn": 0, "cat": "Бахисобгири", "m": 2}, {"q": "q1", "c": "Пайванд", "n": "Хамкори ба хотири рушди устувор", "f": "Офлайн", "p": 1, "d": "1 день (13:30)", "cr": "Бесплатно", "cn": 0, "cat": "Мутахассиси маркетинг", "m": 2}, {"q": "q2", "c": "Азот", "n": "Курс переподготовки и практического обучения в области метрологии для получения допуска к работе в качестве официального инспектора средств измерений", "f": "Офлайн", "p": 4, "d": "10 дней (4 часа)", "cr": "6 400 c", "cn": 6400.0, "cat": "ИТР, Специалист, Рабочий", "m": 5}, {"q": "q2", "c": "Акиа Авесто", "n": "Руководитель производственного подразделения: управление результатом, людьми и дисциплиной", "f": "Офлайн", "p": 20, "d": "2 дня (15 часов)", "cr": "1 031 c", "cn": 1031.0, "cat": "Руководители отделов и мастер участков", "m": 4}, {"q": "q2", "c": "Анор", "n": "Вводное обучение и адаптация сотрудника на рабочем месте", "f": "Онлайн", "p": 4, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 4}, {"q": "q2", "c": "Анор", "n": "Система SBMS/CRM. Тарифы и услуги Компании", "f": "Офлайн", "p": 4, "d": "3 дня (15 часов)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 4}, {"q": "q2", "c": "Анор", "n": "Инструктаж по противопожарной безопасности", "f": "Онлайн", "p": 4, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 5}, {"q": "q2", "c": "Анор", "n": "Инструктаж по охране труда и технике безопасности", "f": "Онлайн", "p": 4, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 5}, {"q": "q2", "c": "Jura", "n": "Управление временем и приоритетами", "f": "Офлайн", "p": 10, "d": "1 день (1,5 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Все сотрудники", "m": 4}, {"q": "q2", "c": "Jura", "n": "Постановка задач по SMART", "f": "Офлайн", "p": 11, "d": "1 день (1,5 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Все сотрудники", "m": 4}, {"q": "q2", "c": "Jura", "n": "Ценный конечный продукт", "f": "Офлайн", "p": 12, "d": "1 день (1,5 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Все сотрудники", "m": 5}, {"q": "q2", "c": "Jura", "n": "Базовое обучение операторов", "f": "Офлайн", "p": 5, "d": "5 дней (15 часов)", "cr": "Бесплатно", "cn": 0, "cat": "Операторы КЦ", "m": 5}, {"q": "q2", "c": "ДС Банк / DC Bank", "n": "Оценка знаний сотрудников карточного отдела по банковским продуктам и стандартам обслуживания (денежные переводы, депозиты, кредиты, сервисы, стандартные процедуры)", "f": "Офлайн", "p": 45, "d": "22 рабочих дня (154 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Сотрудники карточного отдела", "m": 4}, {"q": "q2", "c": "Мармари", "n": "Python", "f": "Офлайн", "p": 4, "d": "3 месяца (18 ч/мес)", "cr": "2 400 c", "cn": 2400.0, "cat": "Специалисты", "m": 5}, {"q": "q2", "c": "Мармари", "n": "Стратегическое управление (обучение продолжается)", "f": "Онлайн", "p": 1, "d": "В процессе", "cr": "—", "cn": null, "cat": "Руководитель", "m": 5}, {"q": "q2", "c": "Мармари", "n": "1С-Бухгалтерия (видео уроки, обучение продолжается)", "f": "Офлайн", "p": 2, "d": "В процессе", "cr": "—", "cn": null, "cat": "Специалисты", "m": 6}, {"q": "q2", "c": "Мармари", "n": "Подготовка к экзамену 1С:Специалист", "f": "Онлайн", "p": 1, "d": "В процессе", "cr": "—", "cn": null, "cat": "Специалист", "m": 6}, {"q": "q2", "c": "Нетс", "n": "Английский язык", "f": "Офлайн", "p": 3, "d": "2 раза в неделю (2,5 часа/занятие)", "cr": "—", "cn": null, "cat": "Менеджера", "m": 5}, {"q": "q2", "c": "Нетс", "n": "Ораторское искусство", "f": "Офлайн", "p": 4, "d": "2 раза в неделю (1,5 часа/занятие)", "cr": "1 600 c", "cn": 1600.0, "cat": "Менеджера", "m": 5}, {"q": "q2", "c": "Нетс", "n": "MS Excel", "f": "Офлайн", "p": 5, "d": "2 раза в неделю (1,5 часа/занятие)", "cr": "2 500 c", "cn": 2500.0, "cat": "Менеджера", "m": 6}, {"q": "q2", "c": "Нетс", "n": "Основы безопасности при выполнении работ на высоте в горных и промышленных районах", "f": "Офлайн", "p": 20, "d": "144 часа (Теория + Практика)", "cr": "50 000 c", "cn": 50000.0, "cat": "Специалисты", "m": 6}, {"q": "q2", "c": "Гулистони Душанбе", "n": "Электрик", "f": "Офлайн", "p": 1, "d": "3 месяца (40 часов)", "cr": "Бесплатно", "cn": 0, "cat": "Специалист", "m": 4}, {"q": "q2", "c": "Пайванд", "n": "Ҳамкорӣ ба хотири рушди устувор: Сабз. Ракамӣ. Ҳушманд (Форум)", "f": "Офлайн", "p": 1, "d": "16.04.2026 (13:30)", "cr": "—", "cn": null, "cat": "Мутахассиси маркетинг", "m": 4}, {"q": "q2", "c": "Пайванд", "n": "Таҳкими низоми муқовимат ба ҷиноятҳои молиявӣ дар тиҷорати ҷаҳонӣ (Обучение)", "f": "Офлайн", "p": 1, "d": "21.04.2026 (9:00-16:00)", "cr": "—", "cn": null, "cat": "Муовини директор", "m": 4}, {"q": "q2", "c": "Пайванд", "n": "Қонунгузории меҳнат ва коргузории кадрӣ (Обучение)", "f": "Офлайн", "p": 2, "d": "07.05.2026", "cr": "1 100 c", "cn": 1100.0, "cat": "Сардори шуъба, мутахассиси шуъбаи кормандон", "m": 5}, {"q": "q2", "c": "Пайванд", "n": "Баланд бардоштани сатҳи огоҳӣ оид ба механизми ҳимояи пасандозҳо (Мизи мудаввар)", "f": "Офлайн", "p": 1, "d": "19.05.2026 (14:00)", "cr": "—", "cn": null, "cat": "И.в сардори шуъбаи робита бо ҷомеъа", "m": 5}, {"q": "q2", "c": "Пайванд", "n": "Муқовимат ба ҷиноятҳои қаллобӣ ва тиҷрибаи комплаенс дар самти танзими таҳримҳо (Семинар)", "f": "Офлайн", "p": 1, "d": "18.05.2026 (9:30-15:00)", "cr": "—", "cn": null, "cat": "Муовини директор", "m": 5}, {"q": "q2", "c": "Пайванд", "n": "Муаррифии низоми иттилоотии автоматикунонидашудаи Хадамоти иҷрои назди Ҳукумати Ҷумҳурии Тоҷикистон (Мизи мудаввар)", "f": "Офлайн", "p": 3, "d": "11.06.2026 (8:30-12:00)", "cr": "—", "cn": null, "cat": "Муовини директор, ҳуқуқшинос, мутахассис", "m": 6}, {"q": "q2", "c": "Сиёма Молл", "n": "Методы обеспечения безопасности и эффективное взаимодействие с посетителями в торговом центре", "f": "Офлайн", "p": 30, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Сотрудники отдела охраны и мониторинга", "m": 4}, {"q": "q2", "c": "Сиёма Молл", "n": "Учение по пожарной безопасности при эвакуации из здания ТСРЦ «Сиёма Молл»", "f": "Офлайн", "p": 90, "d": "1 день (2 часа)", "cr": "Бесплатно", "cn": 0, "cat": "Сотрудники молла и арендаторы", "m": 5}, {"q": "q2", "c": "Сиёма Молл", "n": "Креатив как актив", "f": "Офлайн", "p": 1, "d": "1 день (3 часа)", "cr": "500 c", "cn": 500.0, "cat": "Менеджер по маркетингу", "m": 6}]};
 
-const TITLES={
-  q1:['Квартальный отчет: Обучение персонала','Январь — Март 2026 года'],
-  q2:['Квартальный отчет: Обучение персонала','Апрель - Июнь 2026 года'],
-  q3:['Квартальный отчет: Обучение персонала','Июль — Сентябрь 2026 года'],
-  q4:['Квартальный отчет: Обучение персонала','Октябрь — Декабрь 2026 года'],
-  h1:['Полугодовой отчет: Обучение персонала','Январь — Июнь 2026 года'],
-  year:['Годовой отчет: Обучение персонала','Январь — Декабрь 2026 года']};
+const TITLE_MAP={
+  q1:['Квартальный отчет: Обучение персонала','Январь — Март'],
+  q2:['Квартальный отчет: Обучение персонала','Апрель - Июнь'],
+  q3:['Квартальный отчет: Обучение персонала','Июль — Сентябрь'],
+  q4:['Квартальный отчет: Обучение персонала','Октябрь — Декабрь'],
+  h1:['Полугодовой отчет: Обучение персонала','Январь — Июнь'],
+  year:['Годовой отчет: Обучение персонала','Январь — Декабрь']};
+const titleFor=t=>[TITLE_MAP[t][0], TITLE_MAP[t][1]+' '+curYear+' года'];
 const QUARTER_MONTHS={q1:[1,2,3],q2:[4,5,6],q3:[7,8,9],q4:[10,11,12]};
 const PERIOD_QUARTERS={q1:['q1'],q2:['q2'],q3:['q3'],q4:['q4'],h1:['q1','q2'],year:['q1','q2','q3','q4']};
 const ICONS={
@@ -375,6 +379,8 @@ const NO_COURSE=['Зет Мобайл','Олуча','Сиёма','Сити Ла�
   'Сити Кард','Сити Сервис','Осиё Кемикал','Неру','Доро','Композит','Арвис'];
 const META={q1:{p:288},q2:{p:294},q3:{p:0},q4:{p:0},h1:{p:582},year:{p:582}};
 
+const YEARS=[2024,2025,2026,2027,2028];
+let curYear=2026;
 let allCourses=[], companies=[], curTab='q2', curUser=null, sortKey=null, sortDir=1, editId=null, filterCompany=null, filterMonth=null;
 const fmt=n=>Number(n||0).toLocaleString('ru-RU');
 let toastTimer;
@@ -406,6 +412,11 @@ async function enterApp(user){
   // Check if admin (first user or has admin role)
   const {data:profile}=await sb.from('profiles').select('role').eq('id',user.id).single();
   if(profile?.role==='admin'||!profile)show('adminSection',true);
+  const ys=document.getElementById('yearSel');
+  ys.innerHTML=YEARS.map(y=>`<option value="${y}">${y}</option>`).join('');
+  ys.value=curYear;
+  ys.onchange=()=>{curYear=Number(ys.value);filterCompany=null;filterMonth=null;renderTab(curTab);};
+  document.getElementById('mYear').innerHTML=YEARS.map(y=>`<option value="${y}">${y}</option>`).join('');
   document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
     b.classList.add('on');renderTab(b.dataset.tab);});
@@ -444,7 +455,7 @@ async function loadData(){
 }
 function filterCourses(tab){
   const qs=PERIOD_QUARTERS[tab]||[tab];
-  let rows = allCourses.filter(c=>qs.includes(c.quarter));
+  let rows = allCourses.filter(c=>qs.includes(c.quarter)&&(c.year||2026)===curYear);
   if(filterCompany)rows=rows.filter(c=>c.company===filterCompany);
   if(filterMonth)rows=rows.filter(c=>c.month_index===filterMonth);
   if(sortKey){rows.sort((a,b)=>{
@@ -455,10 +466,18 @@ function filterCourses(tab){
 }
 
 // ── RENDER ──
+function updateTabYears(){
+  const map={q1:'Янв — Мар',q2:'Апр — Июн',q3:'Июл — Сен',q4:'Окт — Дек',h1:'Янв — Июн',year:''};
+  document.querySelectorAll('.tab').forEach(b=>{
+    const s2=b.querySelector('.s');if(!s2)return;
+    const t=b.dataset.tab;
+    s2.textContent=(map[t]?map[t]+' ':'')+curYear;});
+}
 function renderTab(tab){
   curTab=tab;
+  updateTabYears();
   const rows=filterCourses(tab);
-  const [title,sub]=TITLES[tab];
+  const [title,sub]=titleFor(tab);
   let html=`<div class="head"><h1>${title}</h1><p>${sub}</p></div>`;
   if(filterCompany||filterMonth){
     const MN=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
@@ -478,7 +497,8 @@ function renderTab(tab){
 
 function kpiCards(tab,rows){
   const comps=new Set(rows.map(r=>r.company)).size;
-  const cost=rows.reduce((a,r)=>a+(Number(r.cost_num)||0),0);const parts=META[tab].p;
+  const cost=rows.reduce((a,r)=>a+(Number(r.cost_num)||0),0);
+  const parts=(curYear===2026&&META[tab])?META[tab].p:rows.reduce((a,r)=>a+(r.participants||0),0);
   const n=rows.length;
   return `<div class="kpi-grid">${[
     ['book',fmt(n),'Кол-во проведённых курсов','courses'],
@@ -499,7 +519,7 @@ function periodExtras(tab){
     return `<div class="cmp"><div class="cmp-h"><span class="qbadge ${cls}">${name}</span><span style="font-size:14px;color:var(--gray500)">${sub}</span></div>
       <div class="cmp-3">
         <div><div class="cv">${rows.length}</div><div class="cl">курсов</div></div>
-        <div><div class="cv">${fmt(META[q]?.p||0)}</div><div class="cl">участников</div></div>
+        <div><div class="cv">${fmt((curYear===2026&&META[q])?META[q].p:rows.reduce((a,r)=>a+(r.participants||0),0))}</div><div class="cl">участников</div></div>
         <div><div class="cv">${new Set(rows.map(r=>r.company)).size}</div><div class="cl">компаний</div></div>
       </div><div class="cmp-sum">Сумма: <b>${fmt(sum)} c</b></div></div>`;}).join('');
   const cmp=`<div class="cmp-grid${qs.length>2?' four':''}">${cards}</div>`;
@@ -697,6 +717,7 @@ function openEdit(id){
   document.getElementById('addTitle').textContent='Редактировать курс';
   document.getElementById('addErr').textContent='';
   document.getElementById('mQ').value=r.quarter;
+  document.getElementById('mYear').value=r.year||curYear;
   fillMonths(r.quarter,r.month_index);
   fillCompanySelect(r.company_id);
   document.getElementById('newCompRow').style.display='none';
@@ -714,6 +735,7 @@ function openAdd(){
   document.getElementById('addErr').textContent='';
   const q=(PERIOD_QUARTERS[curTab]||[]).length>1?'q2':curTab;
   document.getElementById('mQ').value=q;
+  document.getElementById('mYear').value=curYear;
   fillMonths(q);
   fillCompanySelect();
   ['mName','mDur','mCat','mCompNew'].forEach(id=>document.getElementById(id).value='');
@@ -753,7 +775,8 @@ document.getElementById('addSave').onclick=async()=>{
     duration:document.getElementById('mDur').value.trim(),
     cost_raw:costRaw,cost_num:costNum,
     category:document.getElementById('mCat').value.trim(),
-    month_index:Number(document.getElementById('mMonth').value)||null
+    month_index:Number(document.getElementById('mMonth').value)||null,
+    year:Number(document.getElementById('mYear').value)||curYear
   };
   btn.disabled=true;btn.textContent='Сохранение…';
   let res;
@@ -763,6 +786,11 @@ document.getElementById('addSave').onclick=async()=>{
     res=await sb.from('courses').insert({...payload,created_by:curUser.id}).select('*,companies(name)').single();
   }
   btn.disabled=false;btn.textContent='Сохранить';
+  if(res.error&&/\byear\b/i.test(res.error.message||'')&&/column|schema/i.test(res.error.message||'')){
+    const {year,...noYear}=payload;
+    res=editId?await sb.from('courses').update(noYear).eq('id',editId).select('*,companies(name)').single()
+              :await sb.from('courses').insert({...noYear,created_by:curUser.id}).select('*,companies(name)').single();
+  }
   if(res.error){
     const m=res.error.message||'';
     if(/quarter/i.test(m)&&/constraint|check/i.test(m)){
@@ -773,6 +801,8 @@ document.getElementById('addSave').onclick=async()=>{
   if(editId){allCourses=allCourses.map(c=>c.id===editId?row:c);}
   else{allCourses.push(row);}
   const wasEdit=!!editId;editId=null;
+  if(payload.year&&payload.year!==curYear){curYear=payload.year;
+    const ys=document.getElementById('yearSel');if(ys)ys.value=curYear;}
   closeAdd();renderTab((PERIOD_QUARTERS[curTab]||[]).length>1?curTab:payload.quarter);
   toast(wasEdit?'Изменения сохранены в базу':'Курс добавлен и сохранён в базу');
 };
@@ -789,16 +819,13 @@ document.getElementById('copySql').onclick=async()=>{
 
 // ── SEED IMPORT ──
 async function insertChunks(payload,onProgress){
-  let done=0,useMonth=true;
+  let done=0,useMonth=true,useYear=true;
+  const strip=(arr)=>arr.map(r=>{const o={...r};if(!useMonth)delete o.month_index;if(!useYear)delete o.year;return o;});
   for(let i=0;i<payload.length;i+=25){
-    let chunk=payload.slice(i,i+25);
-    if(!useMonth)chunk=chunk.map(({month_index,...r})=>r);
+    let chunk=strip(payload.slice(i,i+25));
     let {error}=await sb.from('courses').insert(chunk);
-    if(error&&/month_index/i.test(error.message||'')){
-      useMonth=false;
-      chunk=chunk.map(({month_index,...r})=>r);
-      ({error}=await sb.from('courses').insert(chunk));
-    }
+    if(error&&/month_index/i.test(error.message||'')){useMonth=false;chunk=strip(payload.slice(i,i+25));({error}=await sb.from('courses').insert(chunk));}
+    if(error&&/\byear\b/i.test(error.message||'')){useYear=false;chunk=strip(payload.slice(i,i+25));({error}=await sb.from('courses').insert(chunk));}
     if(error)throw error;
     done+=chunk.length;onProgress&&onProgress(done,payload.length);
   }
@@ -817,7 +844,7 @@ async function seedDatabase(onProgress){
   const byName={};companies.forEach(c=>byName[c.name]=c.id);
   const payload=SEED.rows.map(r=>({quarter:r.q,company_id:byName[r.c],course_name:r.n,format:r.f,
     participants:r.p,duration:r.d,cost_raw:r.cr,cost_num:r.cn,category:r.cat,month_index:r.m,
-    created_by:curUser?.id}));
+    year:2026,created_by:curUser?.id}));
   const res=await insertChunks(payload,onProgress);
   await loadData();
   return res;
