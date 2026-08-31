@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Обучение персонала — Авесто Групп</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -223,7 +226,7 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
 <div id="app" style="display:none">
 <nav>
   <div class="nav-in">
-    <span class="nav-label">Обучение персонала</span>
+    <span class="nav-label">Обучение персонала <b style="font-weight:600;color:var(--green);font-size:11px">v4</b></span>
     <button class="tab" data-tab="q1"><span class="t">I квартал</span><span class="s">Янв — Мар 2026</span></button>
     <button class="tab on" data-tab="q2"><span class="t">II квартал</span><span class="s">Апр — Июн 2026</span></button>
     <button class="tab" data-tab="q3"><span class="t">III квартал</span><span class="s">Июл — Сен 2026</span></button>
@@ -294,6 +297,23 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
   </div>
 </div>
 
+<div id="sqlBanner" style="display:none;position:fixed;inset:0;z-index:130;background:rgba(17,24,39,.55);align-items:flex-start;justify-content:center;padding:40px 20px;overflow:auto">
+  <div class="modal-card" style="max-width:560px">
+    <div class="modal-h"><h3>Нужна одна настройка базы</h3><button class="modal-x" onclick="document.getElementById('sqlBanner').style.display='none'">×</button></div>
+    <div style="padding:22px">
+      <p style="font-size:14px;color:var(--gray600);margin-bottom:14px">База пока разрешает только I и II квартал. Чтобы сохранять III и IV квартал, выполните этот SQL один раз:</p>
+      <pre id="sqlText" style="background:var(--gray50);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:12px;overflow:auto;white-space:pre-wrap;line-height:1.5">ALTER TABLE courses DROP CONSTRAINT IF EXISTS courses_quarter_check;
+ALTER TABLE courses ADD CONSTRAINT courses_quarter_check CHECK (quarter IN ('q1','q2','q3','q4'));
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS month_index INTEGER;</pre>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button class="ibtn pri" id="copySql" style="flex:1;justify-content:center">Копировать SQL</button>
+        <a class="ibtn" style="flex:1;justify-content:center;text-decoration:none" target="_blank"
+           href="https://supabase.com/dashboard/project/ttllbnynbaxzmfoiywhj/sql/new">Открыть SQL Editor</a>
+      </div>
+      <div id="copyMsg" style="font-size:13px;color:#16A34A;margin-top:10px;min-height:16px"></div>
+    </div>
+  </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -640,13 +660,28 @@ document.getElementById('addSave').onclick=async()=>{
     res=await sb.from('courses').insert({...payload,created_by:curUser.id}).select('*,companies(name)').single();
   }
   btn.disabled=false;btn.textContent='Сохранить';
-  if(res.error){err.textContent='Ошибка: '+res.error.message;return;}
+  if(res.error){
+    const m=res.error.message||'';
+    if(/quarter/i.test(m)&&/constraint|check/i.test(m)){
+      closeAdd();showSqlHelp();return;
+    }
+    err.textContent='Ошибка: '+m;return;}
   const row={...res.data,company:res.data.companies?.name||compName};
   if(editId){allCourses=allCourses.map(c=>c.id===editId?row:c);}
   else{allCourses.push(row);}
   const wasEdit=!!editId;editId=null;
   closeAdd();renderTab((PERIOD_QUARTERS[curTab]||[]).length>1?curTab:payload.quarter);
   toast(wasEdit?'Изменения сохранены в базу':'Курс добавлен и сохранён в базу');
+};
+
+// ── SQL setup helper ──
+function showSqlHelp(){document.getElementById('sqlBanner').style.display='flex';}
+document.getElementById('copySql').onclick=async()=>{
+  const t=document.getElementById('sqlText').textContent;
+  try{await navigator.clipboard.writeText(t);document.getElementById('copyMsg').textContent='Скопировано — вставьте в SQL Editor и нажмите Run';}
+  catch(e){const r=document.createRange();r.selectNode(document.getElementById('sqlText'));
+    getSelection().removeAllRanges();getSelection().addRange(r);
+    document.getElementById('copyMsg').textContent='Выделено — нажмите Ctrl+C';}
 };
 
 // ── SEED IMPORT ──
