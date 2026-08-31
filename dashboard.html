@@ -106,6 +106,9 @@ nav{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-
 .cmp-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .qbadge{padding:3px 10px;font-size:13px;font-weight:600;border-radius:7px}
 .qbadge.b{background:#EFF6FF;color:#1D4ED8}.qbadge.a{background:#FFFBEB;color:#B45309}
+.qbadge.c{background:#F0FDF4;color:#15803D}.qbadge.d{background:#FDF2F8;color:#BE185D}
+.cmp-grid.four{grid-template-columns:repeat(4,1fr)}
+@media(max-width:1100px){.cmp-grid.four{grid-template-columns:repeat(2,1fr)}}
 .cmp-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .cmp-3 .cv{font-size:22px;font-weight:700}.cmp-3 .cl{font-size:12px;color:var(--gray500);margin-top:3px}
 .cmp-sum{margin-top:14px;padding-top:14px;border-top:1px solid var(--gray100);font-size:14px;color:var(--gray500)}
@@ -118,6 +121,8 @@ nav{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-
 .act .abadges{display:flex;gap:7px;font-size:12px;flex:none}
 .act .q1t{padding:2px 7px;background:#EFF6FF;color:#1D4ED8;border-radius:5px}
 .act .q2t{padding:2px 7px;background:#FFFBEB;color:#B45309;border-radius:5px}
+.act .q3t{padding:2px 7px;background:#F0FDF4;color:#15803D;border-radius:5px}
+.act .q4t{padding:2px 7px;background:#FDF2F8;color:#BE185D;border-radius:5px}
 .act .tot{font-weight:600;color:var(--gray700);width:50px;text-align:right}
 
 /* TABLE */
@@ -140,6 +145,7 @@ tbody tr:nth-child(even){background:rgba(249,250,251,.5)}
 .fbadge.off{background:#EFF6FF;color:#1D4ED8}.fbadge.on{background:#F5F3FF;color:#6D28D9}
 .qtag{display:inline-flex;padding:2px 7px;font-size:12px;font-weight:600;border-radius:5px}
 .qtag.q1{background:#EFF6FF;color:#1D4ED8}.qtag.q2{background:#FFFBEB;color:#B45309}
+.qtag.q3{background:#F0FDF4;color:#15803D}.qtag.q4{background:#FDF2F8;color:#BE185D}
 td.mut{color:var(--gray600)}
 th.sortable{cursor:pointer;user-select:none;transition:.15s}
 th.sortable:hover{color:var(--green);background:var(--gray50)}
@@ -218,9 +224,12 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
 <nav>
   <div class="nav-in">
     <span class="nav-label">Обучение персонала</span>
-    <button class="tab" data-tab="q1"><span class="t">I квартал</span><span class="s">Январь — Март 2026</span></button>
-    <button class="tab on" data-tab="q2"><span class="t">II квартал</span><span class="s">Апрель — Июнь 2026</span></button>
-    <button class="tab" data-tab="h1"><span class="t">Полугодие</span><span class="s">Январь — Июнь 2026</span></button>
+    <button class="tab" data-tab="q1"><span class="t">I квартал</span><span class="s">Янв — Мар 2026</span></button>
+    <button class="tab on" data-tab="q2"><span class="t">II квартал</span><span class="s">Апр — Июн 2026</span></button>
+    <button class="tab" data-tab="q3"><span class="t">III квартал</span><span class="s">Июл — Сен 2026</span></button>
+    <button class="tab" data-tab="q4"><span class="t">IV квартал</span><span class="s">Окт — Дек 2026</span></button>
+    <button class="tab" data-tab="h1"><span class="t">Полугодие</span><span class="s">Янв — Июн 2026</span></button>
+    <button class="tab" data-tab="year"><span class="t">Год</span><span class="s">2026</span></button>
     <div class="nav-right">
       <span class="nav-user" id="navUser"></span>
       <button class="ibtn" id="acctBtn"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c0-3.6 3-6 7-6s7 2.4 7 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Аккаунт</span></button>
@@ -236,7 +245,7 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
   <div class="modal-card">
     <div class="modal-h"><h3 id="addTitle">Добавить курс</h3><button class="modal-x" id="addX">×</button></div>
     <div class="modal-b">
-      <div class="mf"><label>Квартал</label><select id="mQ"><option value="q1">I квартал</option><option value="q2">II квартал</option></select></div>
+      <div class="mf"><label>Квартал</label><select id="mQ"><option value="q1">I квартал (Янв–Мар)</option><option value="q2">II квартал (Апр–Июн)</option><option value="q3">III квартал (Июл–Сен)</option><option value="q4">IV квартал (Окт–Дек)</option></select></div>
       <div class="mf"><label>Месяц</label><select id="mMonth"></select></div>
       <div class="mf"><label>Компания</label><select id="mComp"></select></div>
       <div class="mf full" id="newCompRow" style="display:none"><label>Новая компания</label><input id="mCompNew" placeholder="Название компании"></div>
@@ -286,9 +295,15 @@ const SUPABASE_URL = 'https://ttllbnynbaxzmfoiywhj.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0bGxibnluYmF4em1mb2l5d2hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxMDg1NjUsImV4cCI6MjEwMzY4NDU2NX0.nkxisE4FUP-gjDGu_LX0ZYTVVP9gKXRjfty1SZzo3bQ';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const TITLES={q1:['Квартальный отчет: Обучение персонала','Январь — Март 2026 года'],
+const TITLES={
+  q1:['Квартальный отчет: Обучение персонала','Январь — Март 2026 года'],
   q2:['Квартальный отчет: Обучение персонала','Апрель - Июнь 2026 года'],
-  h1:['Полугодовой отчет: Обучение персонала','Январь — Июнь 2026 года']};
+  q3:['Квартальный отчет: Обучение персонала','Июль — Сентябрь 2026 года'],
+  q4:['Квартальный отчет: Обучение персонала','Октябрь — Декабрь 2026 года'],
+  h1:['Полугодовой отчет: Обучение персонала','Январь — Июнь 2026 года'],
+  year:['Годовой отчет: Обучение персонала','Январь — Декабрь 2026 года']};
+const QUARTER_MONTHS={q1:[1,2,3],q2:[4,5,6],q3:[7,8,9],q4:[10,11,12]};
+const PERIOD_QUARTERS={q1:['q1'],q2:['q2'],q3:['q3'],q4:['q4'],h1:['q1','q2'],year:['q1','q2','q3','q4']};
 const ICONS={
   book:'<path d="M12 6.5C10.5 5.5 8 5 4 5v13c4 0 6.5.5 8 1.5 1.5-1 4-1.5 8-1.5V5c-4 0-6.5.5-8 1.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" fill="none"/><path d="M12 6.5v13" stroke="currentColor" stroke-width="1.7"/>',
   users:'<circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M3.5 20c0-3.3 2.7-5.5 5.5-5.5S14.5 16.7 14.5 20" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M16 5.2a3 3 0 010 5.6M17.5 20c0-2.4-1-4.3-2.5-5.3" stroke="currentColor" stroke-width="1.7" fill="none"/>',
@@ -303,7 +318,7 @@ const COMPANY_COLORS={
 };
 const NO_COURSE=['Зет Мобайл','Олуча','Сиёма','Сити Лайн','Артел','КОД','Филизот',
   'Сити Кард','Сити Сервис','Осиё Кемикал','Неру','Доро','Композит','Арвис'];
-const META={q1:{p:288,s:2300},q2:{p:294,s:65531},h1:{p:582,s:67831}};
+const META={q1:{p:288},q2:{p:294},q3:{p:0},q4:{p:0},h1:{p:582},year:{p:582}};
 
 let allCourses=[], companies=[], curTab='q2', curUser=null, sortKey=null, sortDir=1, editId=null;
 const fmt=n=>Number(n||0).toLocaleString('ru-RU');
@@ -351,7 +366,8 @@ async function loadData(){
   allCourses=(c||[]).map(r=>({...r,company:r.companies?.name||''}));
 }
 function filterCourses(tab){
-  let rows = tab==='h1'?allCourses.slice():allCourses.filter(c=>c.quarter===tab);
+  const qs=PERIOD_QUARTERS[tab]||[tab];
+  let rows = allCourses.filter(c=>qs.includes(c.quarter));
   if(sortKey){rows.sort((a,b)=>{
     let x=a[sortKey],y=b[sortKey];
     if(typeof x==='number'||typeof y==='number'){x=Number(x)||0;y=Number(y)||0;return (x-y)*sortDir;}
@@ -366,7 +382,7 @@ function renderTab(tab){
   const [title,sub]=TITLES[tab];
   let html=`<div class="head"><h1>${title}</h1><p>${sub}</p></div>`;
   html+=kpiCards(tab,rows);
-  if(tab==='h1')html+=h1Extras();
+  if(tab==='h1'||tab==='year')html+=periodExtras(tab);
   html+=planWidget();
   html+=monthChart(tab);
   html+=courseTable(tab,rows);
@@ -386,23 +402,35 @@ function kpiCards(tab,rows){
   ].map(([ic,v,l])=>`<div class="kpi"><div class="ic"><svg viewBox="0 0 24 24">${ICONS[ic]}</svg></div><div class="v">${v}</div><div class="l">${l}</div></div>`).join('')}</div>`;
 }
 
-function h1Extras(){
-  const q1=filterCourses('q1'),q2=filterCourses('q2');
-  const cmp=`<div class="cmp-grid">
-    <div class="cmp"><div class="cmp-h"><span class="qbadge b">I квартал</span><span style="font-size:14px;color:var(--gray500)">Январь — Март</span></div>
-      <div class="cmp-3"><div><div class="cv">${q1.length}</div><div class="cl">курсов</div></div><div><div class="cv">${META.q1.p}</div><div class="cl">участников</div></div><div><div class="cv">${new Set(q1.map(r=>r.company)).size}</div><div class="cl">компаний</div></div></div>
-      <div class="cmp-sum">Сумма: <b>${fmt(q1.reduce((a,r)=>a+(Number(r.cost_num)||0),0))} c</b></div></div>
-    <div class="cmp"><div class="cmp-h"><span class="qbadge a">II квартал</span><span style="font-size:14px;color:var(--gray500)">Апрель — Июнь</span></div>
-      <div class="cmp-3"><div><div class="cv">${q2.length}</div><div class="cl">курсов</div></div><div><div class="cv">${META.q2.p}</div><div class="cl">участников</div></div><div><div class="cv">${new Set(q2.map(r=>r.company)).size}</div><div class="cl">компаний</div></div></div>
-      <div class="cmp-sum">Сумма: <b>${fmt(q2.reduce((a,r)=>a+(Number(r.cost_num)||0),0))} c</b></div></div></div>`;
-  const byComp={};allCourses.forEach(r=>{if(!byComp[r.company])byComp[r.company]={q1:0,q2:0};byComp[r.company][r.quarter]++;});
-  const sorted=Object.entries(byComp).sort((a,b)=>(b[1].q1+b[1].q2)-(a[1].q1+a[1].q2));
-  const maxTot=Math.max(...sorted.map(([,v])=>v.q1+v.q2),1);
-  const bars=sorted.map(([name,v])=>{const tot=v.q1+v.q2,w=Math.round(tot/maxTot*100),col=COMPANY_COLORS[name]||'#9CA3AF';
+function periodExtras(tab){
+  const qs=PERIOD_QUARTERS[tab]||[];
+  const LABEL={q1:['I квартал','Январь — Март','b'],q2:['II квартал','Апрель — Июнь','a'],
+               q3:['III квартал','Июль — Сентябрь','c'],q4:['IV квартал','Октябрь — Декабрь','d']};
+  const cards=qs.map(q=>{
+    const rows=allCourses.filter(c=>c.quarter===q);
+    const [name,sub,cls]=LABEL[q];
+    const sum=rows.reduce((a,r)=>a+(Number(r.cost_num)||0),0);
+    return `<div class="cmp"><div class="cmp-h"><span class="qbadge ${cls}">${name}</span><span style="font-size:14px;color:var(--gray500)">${sub}</span></div>
+      <div class="cmp-3">
+        <div><div class="cv">${rows.length}</div><div class="cl">курсов</div></div>
+        <div><div class="cv">${fmt(META[q]?.p||0)}</div><div class="cl">участников</div></div>
+        <div><div class="cv">${new Set(rows.map(r=>r.company)).size}</div><div class="cl">компаний</div></div>
+      </div><div class="cmp-sum">Сумма: <b>${fmt(sum)} c</b></div></div>`;}).join('');
+  const cmp=`<div class="cmp-grid${qs.length>2?' four':''}">${cards}</div>`;
+  const rowsAll=filterCourses(tab);
+  const byComp={};rowsAll.forEach(r=>{if(!byComp[r.company])byComp[r.company]={};
+    byComp[r.company][r.quarter]=(byComp[r.company][r.quarter]||0)+1;});
+  const totals=Object.entries(byComp).map(([n,v])=>[n,v,Object.values(v).reduce((a,b)=>a+b,0)])
+    .sort((a,b)=>b[2]-a[2]);
+  if(!totals.length)return cmp;
+  const maxTot=Math.max(...totals.map(t=>t[2]),1);
+  const TAGCLS={q1:'q1t',q2:'q2t',q3:'q3t',q4:'q4t'};
+  const bars=totals.map(([name,v,tot])=>{
+    const w=Math.round(tot/maxTot*100),col=COMPANY_COLORS[name]||'#9CA3AF';
+    const badges=qs.filter(q=>v[q]>0).map(q=>`<span class="${TAGCLS[q]}">${v[q]} ${q.toUpperCase()}</span>`).join('');
     return `<div class="act"><div class="an" title="${name}">${name}</div><div class="arow">
       <div class="atrack"><div class="afill" style="width:${w}%;min-width:${tot>0?20:0}px;background:${col}"></div></div>
-      <div class="abadges">${v.q1>0?`<span class="q1t">${v.q1} Q1</span>`:''}${v.q2>0?`<span class="q2t">${v.q2} Q2</span>`:''}<span class="tot">${tot} кур.</span></div>
-    </div></div>`;}).join('');
+      <div class="abadges">${badges}<span class="tot">${tot} кур.</span></div></div></div>`;}).join('');
   return cmp+`<div class="card"><h3>Активность по компаниям</h3>${bars}</div>`;
 }
 
@@ -427,8 +455,8 @@ function planWidget(){
 
 function monthChart(tab){
   const rows=filterCourses(tab);
-  const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь'];
-  const idx = tab==='q1'?[1,2,3]:tab==='q2'?[4,5,6]:[1,2,3,4,5,6];
+  const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const idx=(PERIOD_QUARTERS[tab]||[tab]).flatMap(q=>QUARTER_MONTHS[q]||[]);
   const compSet=[...new Set(rows.map(r=>r.company))].filter(Boolean);
   const data=idx.map(mi=>{
     const d={month:MONTHS[mi-1]};
@@ -456,7 +484,7 @@ function monthChart(tab){
 
 function courseTable(tab,rows){
   const totalP=rows.reduce((s,r)=>s+(r.participants||0),0);
-  const wq=tab==='h1';
+  const wq=(PERIOD_QUARTERS[tab]||[]).length>1;
   const body=rows.map((r,i)=>`<tr>
     <td>${i+1}</td>${wq?`<td><span class="qtag ${r.quarter}">${r.quarter.toUpperCase()}</span></td>`:''}
     <td><span class="cpill">${r.company}</span></td>
@@ -498,10 +526,10 @@ function wireTable(){
 }
 
 // ── ADD / EDIT MODAL ──
-const MONTHS_ALL=['Январь','Февраль','Март','Апрель','Май','Июнь'];
+const MONTHS_ALL=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 function fillMonths(q,sel){
   const el=document.getElementById('mMonth');
-  const idx=q==='q1'?[1,2,3]:[4,5,6];
+  const idx=QUARTER_MONTHS[q]||[1,2,3];
   el.innerHTML=idx.map(i=>`<option value="${i}">${MONTHS_ALL[i-1]}</option>`).join('');
   if(sel)el.value=sel;
 }
@@ -532,7 +560,7 @@ function openAdd(){
   editId=null;
   document.getElementById('addTitle').textContent='Добавить курс';
   document.getElementById('addErr').textContent='';
-  const q=curTab==='h1'?'q2':curTab;
+  const q=(PERIOD_QUARTERS[curTab]||[]).length>1?'q2':curTab;
   document.getElementById('mQ').value=q;
   fillMonths(q);
   fillCompanySelect();
@@ -588,7 +616,7 @@ document.getElementById('addSave').onclick=async()=>{
   if(editId){allCourses=allCourses.map(c=>c.id===editId?row:c);}
   else{allCourses.push(row);}
   const wasEdit=!!editId;editId=null;
-  closeAdd();renderTab(curTab);
+  closeAdd();renderTab((PERIOD_QUARTERS[curTab]||[]).length>1?curTab:payload.quarter);
   toast(wasEdit?'Изменения сохранены в базу':'Курс добавлен и сохранён в базу');
 };
 
