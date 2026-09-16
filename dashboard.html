@@ -248,6 +248,7 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
     <div class="field"><label>Пароль</label><input id="lp" type="password" placeholder="Пароль" autocomplete="current-password"></div>
     <button class="lbtn" id="loginBtn">Войти</button>
     <div class="lerr" id="loginErr"></div>
+    <div class="lhint" id="forgotRow" style="display:none"><a href="#" id="forgotLink" style="color:var(--green-d);text-decoration:underline">Забыли пароль? Отправить письмо для сброса</a></div>
     <div class="lhint">Нет аккаунта? Обратитесь к администратору.</div>
   </div>
 </div>
@@ -256,7 +257,7 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
 <div id="app" style="display:none">
 <nav>
   <div class="nav-in">
-    <span class="nav-label">Обучение персонала <b style="font-weight:600;color:var(--green);font-size:11px">v7</b></span>
+    <span class="nav-label">Обучение персонала <b style="font-weight:600;color:var(--green);font-size:11px">v8</b></span>
     <button class="tab" data-tab="q1"><span class="t">I квартал</span><span class="s">Янв — Мар 2026</span></button>
     <button class="tab on" data-tab="q2"><span class="t">II квартал</span><span class="s">Апр — Июн 2026</span></button>
     <button class="tab" data-tab="q3"><span class="t">III квартал</span><span class="s">Июл — Сен 2026</span></button>
@@ -410,13 +411,40 @@ async function init(){
   if(session){await enterApp(session.user);}
   else{show('boot',false);show('loginPage',true);}
 }
+function authErrText(e){
+  const m=(e&&(e.message||''))+'';
+  if(/email not confirmed|not confirmed/i.test(m))
+    return 'Аккаунт не подтверждён. В Supabase → Authentication → Users откройте пользователя и включите Confirm email (или создайте его с галочкой Auto Confirm User).';
+  if(/invalid login credentials|invalid credentials/i.test(m))
+    return 'Пользователь не найден или пароль неверный. Проверьте email и раскладку клавиатуры.';
+  if(/rate limit|too many/i.test(m))
+    return 'Слишком много попыток входа. Подождите минуту и попробуйте снова.';
+  if(/disabled/i.test(m))
+    return 'Вход по email отключён в настройках Supabase (Authentication → Providers → Email).';
+  if(/fetch|network|failed to fetch/i.test(m))
+    return 'Нет связи с сервером базы данных. Проверьте интернет.';
+  return 'Не удалось войти: '+m;
+}
 document.getElementById('loginBtn').onclick=async()=>{
+  const btn=document.getElementById('loginBtn'),err=document.getElementById('loginErr');
   const email=document.getElementById('lu').value.trim(),pass=document.getElementById('lp').value;
-  document.getElementById('loginErr').textContent='';
-  if(!email||!pass){document.getElementById('loginErr').textContent='Заполните все поля';return;}
-  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){document.getElementById('loginErr').textContent='Неверный email или пароль';return;}
-  await enterApp(data.user);
+  err.textContent='';err.style.color='#DC2626';
+  if(!email||!pass){err.textContent='Заполните все поля';return;}
+  btn.disabled=true;btn.textContent='Вход…';
+  let res;
+  try{res=await sb.auth.signInWithPassword({email,password:pass});}
+  catch(e){res={error:e};}
+  btn.disabled=false;btn.textContent='Войти';
+  if(res.error){err.textContent=authErrText(res.error);document.getElementById('forgotRow').style.display='block';return;}
+  await enterApp(res.data.user);
+};
+document.getElementById('forgotLink').onclick=async(ev)=>{
+  ev.preventDefault();
+  const email=document.getElementById('lu').value.trim(),err=document.getElementById('loginErr');
+  if(!email){err.style.color='#DC2626';err.textContent='Сначала введите email';return;}
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.href});
+  if(error){err.style.color='#DC2626';err.textContent='Не удалось отправить письмо: '+error.message;return;}
+  err.style.color='#16A34A';err.textContent='Письмо для смены пароля отправлено на '+email;
 };
 ['lu','lp'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('loginBtn').click();}));
 document.getElementById('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload();};
