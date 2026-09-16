@@ -257,7 +257,7 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
 <div id="app" style="display:none">
 <nav>
   <div class="nav-in">
-    <span class="nav-label">Обучение персонала <b style="font-weight:600;color:var(--green);font-size:11px">v8</b></span>
+    <span class="nav-label">Обучение персонала <b style="font-weight:600;color:var(--green);font-size:11px">v9</b></span>
     <button class="tab" data-tab="q1"><span class="t">I квартал</span><span class="s">Янв — Мар 2026</span></button>
     <button class="tab on" data-tab="q2"><span class="t">II квартал</span><span class="s">Апр — Июн 2026</span></button>
     <button class="tab" data-tab="q3"><span class="t">III квартал</span><span class="s">Июл — Сен 2026</span></button>
@@ -421,8 +421,10 @@ function authErrText(e){
     return 'Слишком много попыток входа. Подождите минуту и попробуйте снова.';
   if(/disabled/i.test(m))
     return 'Вход по email отключён в настройках Supabase (Authentication → Providers → Email).';
-  if(/fetch|network|failed to fetch/i.test(m))
-    return 'Нет связи с сервером базы данных. Проверьте интернет.';
+  if(/fetch|network|failed to fetch|load failed/i.test(m))
+    return 'Нет связи с базой данных. Скорее всего проект Supabase на паузе — откройте supabase.com, найдите проект avesto-hr и нажмите «Resume project», затем повторите вход.';
+  if(/50\d|unavailable|paused|timeout/i.test(m))
+    return 'База данных временно недоступна (проект Supabase может быть на паузе). Нажмите «Resume project» в панели Supabase и попробуйте снова.';
   return 'Не удалось войти: '+m;
 }
 document.getElementById('loginBtn').onclick=async()=>{
