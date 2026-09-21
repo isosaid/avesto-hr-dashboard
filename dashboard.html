@@ -172,6 +172,7 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
   color:#fff;font-weight:700;font-size:12px;letter-spacing:.04em;padding:3px 9px;border-radius:7px}
 .site-footer .l2{margin-top:8px;font-size:13px;color:var(--gray400);display:flex;
   align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.cbadge{display:inline-flex;margin-left:10px;padding:3px 11px;border-radius:8px;background:#F0FDF4;color:var(--green-d);font-size:13px;font-weight:600;vertical-align:middle}
 .filter-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#F0FDF4;
   border:1px solid #BBF7D0;border-radius:10px;margin-bottom:16px;font-size:14px;color:#15803D}
 .filter-bar button{margin-left:auto;border:none;background:#fff;border:1px solid #BBF7D0;color:#15803D;
@@ -257,7 +258,7 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
 <div id="app" style="display:none">
 <nav>
   <div class="nav-in">
-    <span class="nav-label">Обучение персонала <b style="font-weight:600;color:var(--green);font-size:11px">v10</b></span>
+    <span class="nav-label">Обучение персонала <b style="font-weight:600;color:var(--green);font-size:11px">v11</b></span>
     <button class="tab" data-tab="q1"><span class="t">I квартал</span><span class="s">Янв — Мар 2026</span></button>
     <button class="tab on" data-tab="q2"><span class="t">II квартал</span><span class="s">Апр — Июн 2026</span></button>
     <button class="tab" data-tab="q3"><span class="t">III квартал</span><span class="s">Июл — Сен 2026</span></button>
@@ -322,7 +323,7 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
       <button class="ibtn pri" id="cpSave" style="width:100%;justify-content:center;margin-top:4px">Сохранить пароль</button>
       <div class="acct-msg" id="cpMsg"></div>
     </div>
-    <div class="acct-section">
+    <div class="acct-section" id="seedSection" style="display:none">
       <h4>Данные отчёта</h4>
       <div style="font-size:13px;color:var(--gray500);margin-bottom:12px">В базе сейчас: <b id="dbCount" style="color:var(--ink)">—</b> курсов.<br>Импорт загрузит 81 курс из отчёта (I и II квартал) и заменит текущие.</div>
       <button class="ibtn pri" id="seedBtn" style="width:100%;justify-content:center">Импортировать данные отчёта</button>
@@ -398,6 +399,24 @@ const NO_COURSE=['Зет Мобайл','Олуча','Сиёма','Сити Ла�
 const META={q1:{p:288},q2:{p:294},q3:{p:0},q4:{p:0},h1:{p:582},year:{p:582}};
 
 const YEARS=[2024,2025,2026,2027,2028];
+let isAdmin=false, myCompany=null;
+const COMPANY_ALIASES={
+  'Зет Мобайл':['зет мобайл','zet-mobile','zet mobile'],
+  'Нетс':['нетс','нет солюшенс'],
+  'КОД':['код','комбинати орди душанбе'],
+  'Филиззот':['филиззот','филизот'],
+  'ДС Банк / DC Bank':['дс банк / dc bank','дс банк','dc bank','душанбе сити банк'],
+  'Доро':['доро','doro','doro pay'],
+  'Неру':['неру','neru']
+};
+const norm=v=>String(v||'').toLowerCase().replace(/ё/g,'е').trim();
+function sameCompany(listName,company){
+  if(!company)return false;
+  const names=(COMPANY_ALIASES[company]||[company]).map(norm);
+  return names.includes(norm(listName));
+}
+const myNeeds=()=>isAdmin?NEEDS:NEEDS.filter(n=>(n.companies||[]).some(c=>sameCompany(c,myCompany)));
+const useMeta=k=>isAdmin&&!filterCompany&&!filterMonth&&curYear===2026&&META[k];
 let curYear=2026;
 let allCourses=[], companies=[], curTab='q2', curUser=null, sortKey=null, sortDir=1, editId=null, filterCompany=null, filterMonth=null;
 const fmt=n=>Number(n||0).toLocaleString('ru-RU');
@@ -456,11 +475,20 @@ document.getElementById('logoutBtn').onclick=async()=>{await sb.auth.signOut();l
 async function enterApp(user){
   curUser=user;
   show('boot',false);show('loginPage',false);show('app',true);
-  document.getElementById('navUser').textContent=user.email.split('@')[0];
+  document.getElementById('navUser').textContent=user.email;
   document.getElementById('acctWho').textContent=user.email;
-  // Check if admin (first user or has admin role)
-  const {data:profile}=await sb.from('profiles').select('role').eq('id',user.id).single();
-  if(profile?.role==='admin'||!profile)show('adminSection',true);
+  const {data:profile}=await sb.from('profiles').select('role,company_id,companies(name)').eq('id',user.id).maybeSingle();
+  isAdmin=profile?.role==='admin';
+  myCompany=profile?.companies?.name||null;
+  show('adminSection',false);
+  show('seedSection',isAdmin);
+  document.getElementById('acctWho').textContent=user.email+(isAdmin?' · весь холдинг':(myCompany?' · '+myCompany:''));
+  if(!profile||(!isAdmin&&!myCompany)){
+    document.getElementById('root').innerHTML=`<div class="card" style="margin-top:40px;text-align:center;padding:48px 24px">
+      <h3 style="margin-bottom:10px">Доступ не настроен</h3>
+      <p style="color:var(--gray500);font-size:15px">Вашему аккаунту ещё не назначена компания.<br>Обратитесь к администратору.</p></div>`;
+    return;
+  }
   const ys=document.getElementById('yearSel');
   ys.innerHTML=YEARS.map(y=>`<option value="${y}">${y}</option>`).join('');
   ys.value=curYear;
@@ -471,7 +499,7 @@ async function enterApp(user){
     b.classList.add('on');renderTab(b.dataset.tab);});
   await loadData();
   renderTab('q2');
-  if(allCourses.length===0){
+  if(isAdmin&&allCourses.length===0){
     const bar=document.createElement('div');
     bar.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:120';
     bar.textContent='База пуста — загружаю данные отчёта…';document.body.appendChild(bar);
@@ -527,7 +555,7 @@ function renderTab(tab){
   updateTabYears();
   const rows=filterCourses(tab);
   const [title,sub]=titleFor(tab);
-  let html=`<div class="head"><h1>${title}</h1><p>${sub}</p></div>`;
+  let html=`<div class="head"><h1>${title}</h1><p>${sub}${isAdmin?'':` <span class="cbadge">${myCompany}</span>`}</p></div>`;
   if(filterCompany||filterMonth){
     const MN=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
     const parts=[];if(filterCompany)parts.push('компания: <b>'+filterCompany+'</b>');
@@ -547,7 +575,7 @@ function renderTab(tab){
 function kpiCards(tab,rows){
   const comps=new Set(rows.map(r=>r.company)).size;
   const cost=rows.reduce((a,r)=>a+(Number(r.cost_num)||0),0);
-  const parts=(curYear===2026&&META[tab])?META[tab].p:rows.reduce((a,r)=>a+(r.participants||0),0);
+  const parts=useMeta(tab)?META[tab].p:rows.reduce((a,r)=>a+(r.participants||0),0);
   const n=rows.length;
   return `<div class="kpi-grid">${[
     ['book',fmt(n),'Кол-во проведённых курсов','courses'],
@@ -568,7 +596,7 @@ function periodExtras(tab){
     return `<div class="cmp"><div class="cmp-h"><span class="qbadge ${cls}">${name}</span><span style="font-size:14px;color:var(--gray500)">${sub}</span></div>
       <div class="cmp-3">
         <div><div class="cv">${rows.length}</div><div class="cl">курсов</div></div>
-        <div><div class="cv">${fmt((curYear===2026&&META[q])?META[q].p:rows.reduce((a,r)=>a+(r.participants||0),0))}</div><div class="cl">участников</div></div>
+        <div><div class="cv">${fmt(useMeta(q)?META[q].p:rows.reduce((a,r)=>a+(r.participants||0),0))}</div><div class="cl">участников</div></div>
         <div><div class="cv">${new Set(rows.map(r=>r.company)).size}</div><div class="cl">компаний</div></div>
       </div><div class="cmp-sum">Сумма: <b>${fmt(sum)} c</b></div></div>`;}).join('');
   const cmp=`<div class="cmp-grid${qs.length>2?' four':''}">${cards}</div>`;
@@ -590,12 +618,13 @@ function periodExtras(tab){
 }
 
 function planWidget(){
-  const total=NEEDS.length,done=NEEDS.filter(n=>n.completed).length,no=total-done;
-  const pct=Math.round(done/total*100);
-  const R=75,C=110,len=2*Math.PI*R,frac=done/total;
+  const L=myNeeds();
+  const total=L.length,done=L.filter(n=>n.completed).length,no=total-done;
+  const pct=total?Math.round(done/total*100):0;
+  const R=75,C=110,len=2*Math.PI*R,frac=total?done/total:0;
   const check='<svg fill="none" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const cross='<svg fill="none" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-  return `<div class="card"><h3>Выполнение плана потребности 2026</h3><div class="plan-grid">
+  return `<div class="card"><h3>Выполнение плана потребности 2026${isAdmin?'':' — '+myCompany}</h3>${!isAdmin&&!total?'<p style="color:var(--gray500);font-size:14px;margin:-12px 0 16px">Для вашей компании позиций в плане потребности пока нет.</p>':''}<div class="plan-grid">
     <div class="donut-box"><div class="donut-rel"><svg width="220" height="220" viewBox="0 0 220 220">
       <circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="#E5E7EB" stroke-width="26"/>
       <circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="#66B67A" stroke-width="26"
@@ -606,7 +635,7 @@ function planWidget(){
       <div class="pstat g done click" data-plan="done"><div><div class="pl">Выполнено</div><div class="pv">${done}</div></div><div class="pcircle g">${check}</div></div>
       <div class="pstat x click" data-plan="todo"><div><div class="pl">Не выполнено</div><div class="pv">${no}</div></div><div class="pcircle x">${cross}</div></div>
     </div></div>
-    <div class="nocourse"><h4>Компании без проведенных курсов</h4><div class="chips">${NO_COURSE.map(c=>`<span class="chip click" data-nocourse="${c}" title="Добавить курс для этой компании">${c}</span>`).join('')}</div></div></div>`;
+    ${isAdmin?`<div class="nocourse"><h4>Компании без проведенных курсов</h4><div class="chips">${NO_COURSE.map(c=>`<span class="chip click" data-nocourse="${c}" title="Добавить курс для этой компании">${c}</span>`).join('')}</div></div>`:''}</div>`;
 }
 
 function monthChart(tab){
@@ -699,7 +728,7 @@ function wireInteractive(tab){
   // plan
   document.querySelectorAll('[data-plan]').forEach(el=>el.onclick=()=>{
     const mode=el.dataset.plan;
-    const items=NEEDS.filter(n=>mode==='all'?true:mode==='done'?n.completed:!n.completed);
+    const items=myNeeds().filter(n=>mode==='all'?true:mode==='done'?n.completed:!n.completed);
     const html=items.map(n=>`<div class="info-row">
       <span class="${n.completed?'ok':'no'}">${n.completed?'✓':'—'}</span>
       <div><div>${n.need}</div>${n.companies?.length?`<div class="sub">${n.companies.join(', ')}</div>`:''}</div></div>`).join('');
@@ -757,8 +786,10 @@ function fillMonths(q,sel){
 document.getElementById('mQ').addEventListener('change',e=>fillMonths(e.target.value));
 function fillCompanySelect(sel){
   const el=document.getElementById('mComp');
-  el.innerHTML=companies.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')+'<option value="__new__">+ Новая компания…</option>';
+  const list=isAdmin?companies:companies.filter(c=>c.name===myCompany);
+  el.innerHTML=list.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')+(isAdmin?'<option value="__new__">+ Новая компания…</option>':'');
   if(sel)el.value=sel;
+  el.disabled=!isAdmin;
 }
 function openEdit(id){
   const r=allCourses.find(c=>c.id===id);if(!r)return;
