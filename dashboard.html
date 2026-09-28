@@ -430,14 +430,13 @@ async function init(){
   if(session){await enterApp(session.user);}
   else{show('boot',false);show('loginPage',true);}
 }
-const LOGIN_DOMAIN='avesto.tj';
-const toEmail=v=>{v=(v||'').trim();return v && !v.includes('@') ? v+'@'+LOGIN_DOMAIN : v;};
+const toEmail=v=>{v=(v||'').trim();return v;};
 function authErrText(e){
   const m=(e&&(e.message||''))+'';
   if(/email not confirmed|not confirmed/i.test(m))
     return 'Аккаунт не подтверждён. В Supabase → Authentication → Users откройте пользователя и включите Confirm email (или создайте его с галочкой Auto Confirm User).';
   if(/invalid login credentials|invalid credentials/i.test(m))
-    return 'Пользователь не найден или пароль неверный. Логин без почты автоматически дополняется до @'+LOGIN_DOMAIN+' — такой пользователь должен быть создан в Supabase.';
+    return 'Пользователь не найден или пароль неверный.';
   if(/rate limit|too many/i.test(m))
     return 'Слишком много попыток входа. Подождите минуту и попробуйте снова.';
   if(/disabled/i.test(m))
@@ -447,6 +446,7 @@ function authErrText(e){
   if(/50\d|unavailable|paused|timeout/i.test(m))
     return 'База данных временно недоступна (проект Supabase может быть на паузе). Нажмите «Resume project» в панели Supabase и попробуйте снова.';
   return 'Не удалось войти: '+m;
+}
 }
 document.getElementById('loginBtn').onclick=async()=>{
   const btn=document.getElementById('loginBtn'),err=document.getElementById('loginErr');
