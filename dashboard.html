@@ -447,7 +447,6 @@ function authErrText(e){
     return 'База данных временно недоступна (проект Supabase может быть на паузе). Нажмите «Resume project» в панели Supabase и попробуйте снова.';
   return 'Не удалось войти: '+m;
 }
-}
 document.getElementById('loginBtn').onclick=async()=>{
   const btn=document.getElementById('loginBtn'),err=document.getElementById('loginErr');
   const email=toEmail(document.getElementById('lu').value),pass=document.getElementById('lp').value;
