@@ -329,6 +329,61 @@ const lucide = { createIcons(opts = {}) {
   }));
 } };
 
+
+/* ===================== Подключение к базе (Supabase) =====================
+   Пустые url/anonKey — демо-режим: вход по любому паролю, кабинет по email.
+   Заполненные — настоящий вход: пароли проверяет Supabase Auth, роль берётся из таблицы ipr_profiles. */
+const SUPABASE = { url: "", anonKey: "" };
+const DB = Boolean(SUPABASE.url && SUPABASE.anonKey);
+const ROLE_OF = { hr_admin:"hr", superadmin:"sa", curator:"cur", manager:"mgr" };
+const HOME = { hr:"a.dashboard", sa:"a.dashboard", cur:"c.wards", mgr:"m.plan" };
+const AUTH_KEY = "avesto-ipr-session";
+const MSG = { invalid:"Неверный email или пароль", network:"Не удалось связаться с сервером. Проверьте интернет и попробуйте ещё раз.", noProfile:"Учётная запись не настроена. Обратитесь к HR-директору холдинга.", expired:"Сессия истекла. Обновите страницу и войдите снова." };
+function loadSession(){ try { return JSON.parse(localStorage.getItem(AUTH_KEY)); } catch (e) { return null; } }
+function saveSession(v){ try { v ? localStorage.setItem(AUTH_KEY, JSON.stringify(v)) : localStorage.removeItem(AUTH_KEY); } catch (e) {} }
+async function sb(path, opts = {}){
+  try {
+    const r = await fetch(SUPABASE.url.replace(/\/$/, "") + path, { ...opts, headers: { apikey: SUPABASE.anonKey, "Content-Type": "application/json", ...(opts.headers || {}) } });
+    const body = r.status === 204 ? {} : await r.json().catch(() => ({}));
+    return { ok: r.ok, status: r.status, body };
+  } catch (e) { return { ok: false, status: 0, body: {} }; }
+}
+function sessionFrom(b, prev = {}){ return { ...prev, access: b.access_token, refresh: b.refresh_token, exp: Date.now() + (b.expires_in || 3600) * 1000, uid: b.user?.id ?? prev.uid, email: b.user?.email ?? prev.email }; }
+async function signIn(email, password){
+  const r = await sb("/auth/v1/token?grant_type=password", { method: "POST", body: JSON.stringify({ email, password }) });
+  if (!r.ok) return { error: r.status === 0 || r.status >= 500 ? MSG.network : MSG.invalid };
+  const s = sessionFrom(r.body);
+  const p = await sb(`/rest/v1/ipr_profiles?id=eq.${s.uid}&select=role,full_name,must_change_password`, { headers: { Authorization: "Bearer " + s.access } });
+  const row = p.ok && Array.isArray(p.body) ? p.body[0] : null;
+  if (!row || !ROLE_OF[row.role]) return { error: MSG.noProfile };
+  Object.assign(s, { role: ROLE_OF[row.role], name: row.full_name, mustChange: Boolean(row.must_change_password) });
+  saveSession(s);
+  return { session: s };
+}
+async function ensureFresh(){
+  const s = loadSession(); if (!s) return null;
+  if (Date.now() < s.exp - 60000) return s;
+  const r = await sb("/auth/v1/token?grant_type=refresh_token", { method: "POST", body: JSON.stringify({ refresh_token: s.refresh }) });
+  if (!r.ok) { if (r.status !== 0) saveSession(null); return r.status === 0 ? s : null; }
+  const next = sessionFrom(r.body, s); saveSession(next); return next;
+}
+async function changePasswordDB(current, next){
+  const s = await ensureFresh(); if (!s) return { error: MSG.expired };
+  const chk = await sb("/auth/v1/token?grant_type=password", { method: "POST", body: JSON.stringify({ email: s.email, password: current }) });
+  if (!chk.ok) return chk.status === 0 ? { error: MSG.network } : { field: 0, error: "Текущий пароль указан неверно" };
+  const auth = { Authorization: "Bearer " + chk.body.access_token };
+  const r = await sb("/auth/v1/user", { method: "PUT", headers: auth, body: JSON.stringify({ password: next }) });
+  if (!r.ok) return { error: r.body?.msg || r.body?.error_description || "Не удалось сменить пароль. Попробуйте ещё раз." };
+  await sb(`/rest/v1/ipr_profiles?id=eq.${s.uid}`, { method: "PATCH", headers: { ...auth, Prefer: "return=minimal" }, body: JSON.stringify({ must_change_password: false }) });
+  await sb("/auth/v1/logout?scope=others", { method: "POST", headers: auth });
+  saveSession({ ...sessionFrom(chk.body, s), mustChange: false });
+  return { ok: true };
+}
+function signOut(scope = "local"){
+  const s = loadSession(); saveSession(null);
+  if (s) sb(`/auth/v1/logout?scope=${scope}`, { method: "POST", headers: { Authorization: "Bearer " + s.access } });
+}
+
 /* ===================== Утилиты ===================== */
 const PR = new Intl.PluralRules("ru");
 function plural(n, f){ const r = PR.select(n); return r === "one" ? f[0] : r === "few" ? f[1] : f[2]; }
@@ -535,7 +590,7 @@ function rerender(){ const y = window.scrollY; render(true); window.scrollTo(0, 
 window.addEventListener("hashchange", () => { S.more = {}; render(); window.scrollTo(0, 0); });
 
 function setRole(role){
-  if (role === "login") { S.role = null; go("login"); return; }
+  if (role === "login" || role === "login-all") { if (DB) signOut(role === "login-all" ? "global" : "local"); S.role = null; go("login"); return; }
   S.role = role; S.user = USERS[role];
   go(role === "cur" ? "c.wards" : role === "mgr" ? "m.plan" : "a.dashboard");
 }
@@ -580,7 +635,7 @@ function openUserMenu(btn){
   popAt(btn, `<div style="padding:8px 12px 12px"><p class="serif t-lg c-text" style="line-height:1.25">${S.user.name}</p><p class="mt1 t-sm c-muted trunc">${S.user.email}</p><span class="badge b-accent mt2" style="background:var(--accent-soft)">${S.user.title}</span></div><div class="sep"></div>
   <button class="mi" onclick="closeMenu();toast('Личные данные открываются в боковой панели')">${ic("user-round")}Личные данные</button>
   <button class="mi" onclick="closeMenu();S.backTo=location.hash.slice(1);go('pw')">${ic("key-round")}Сменить пароль</button>
-  <button class="mi" onclick="closeMenu();dialog('Выйти на всех устройствах?','Все открытые сеансы — на этом компьютере, телефоне и других устройствах — будут закрыты. Чтобы продолжить работу, нужно будет войти заново.','Выйти везде','primary',()=>setRole('login'))">${ic("monitor-smartphone")}Выйти на всех устройствах</button>
+  <button class="mi" onclick="closeMenu();dialog('Выйти на всех устройствах?','Все открытые сеансы — на этом компьютере, телефоне и других устройствах — будут закрыты. Чтобы продолжить работу, нужно будет войти заново.','Выйти везде','primary',()=>setRole('login-all'))">${ic("monitor-smartphone")}Выйти на всех устройствах</button>
   <div class="sep"></div><button class="mi" onclick="closeMenu();setRole('login')">${ic("log-out")}Выйти</button>`, 288);
 }
 function changePassword(){ dialog("Сменить пароль", "", "Сохранить", "primary", () => toast("Пароль изменён"), `<div class="col" style="gap:20px"><div class="field"><label class="label">Текущий пароль</label><input class="inp" type="password"></div><div class="field"><label class="label">Новый пароль</label><input class="inp" type="password"><p class="hint">Не короче 10 символов</p></div></div>`); }
@@ -625,7 +680,8 @@ function LoginPage(){
         <form id="loginForm" novalidate class="col" style="margin-top:40px;gap:24px">
           <div class="field fade-up" style="animation-delay:.12s"><label class="label" for="lemail">Email</label><input id="lemail" class="inp" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" autofocus><p class="err" id="eemail" hidden></p></div>
           <div class="field fade-up" style="animation-delay:.18s"><label class="label" for="lpass">Пароль</label><div class="inp-wrap"><input id="lpass" class="inp has-trail" type="password" autocomplete="current-password"><span class="trail"><button type="button" id="eye" aria-label="Показать пароль" class="row" style="justify-content:center;width:36px;height:36px;border-radius:50%;color:var(--text-muted)">${ic("eye")}</button></span></div><p class="err" id="epass" hidden></p></div>
-          <div class="fade-up" style="padding-top:8px;animation-delay:.24s"><button type="submit" class="btn btn-primary btn-lg" style="width:100%">Войти</button></div>
+          <p id="lerr" role="alert" hidden style="border-radius:12px;background:var(--danger-soft);padding:12px 16px;font-size:13px;color:var(--danger)"></p>
+          <div class="fade-up" style="padding-top:8px;animation-delay:.24s"><button type="submit" id="lbtn" class="btn btn-primary btn-lg" style="width:100%">Войти</button></div>
         </form>
         <p class="fade-up t-sm c-muted" style="margin-top:32px;animation-delay:.3s">Нет доступа или забыли пароль — обратитесь к HR-директору холдинга.</p>
       </div>
@@ -644,7 +700,18 @@ function bindLogin(){
     ee.hidden = okE; ee.textContent = em.value.trim() ? "Проверьте email" : "Введите email"; em.setAttribute("aria-invalid", !okE);
     ep.hidden = okP; ep.textContent = "Введите пароль"; pw.setAttribute("aria-invalid", !okP);
     if (!okE || !okP) return;
-    const v = em.value.toLowerCase();
+    const v = em.value.trim().toLowerCase();
+    if (DB) {
+      const btn = document.getElementById("lbtn"), box = document.getElementById("lerr");
+      btn.disabled = true; btn.textContent = "Входим…"; box.hidden = true;
+      signIn(v, pw.value).then(res => {
+        btn.disabled = false; btn.textContent = "Войти";
+        if (res.error) { box.textContent = res.error; box.hidden = false; return; }
+        S.backTo = HOME[res.session.role];
+        go(res.session.mustChange ? "pw" : HOME[res.session.role]);
+      });
+      return;
+    }
     setRole(v.includes("curator") ? "cur" : (v.includes("long") || v.includes("manager")) ? "mgr" : v.includes("super") ? "sa" : "hr");
   };
 }
@@ -1157,15 +1224,22 @@ function PasswordPage(){
       ${[["pw1","Текущий пароль","current-password"],["pw2","Новый пароль","new-password"],["pw3","Новый пароль ещё раз","new-password"]].map(([id, l, ac], i) => `<div class="field fade-up" style="animation-delay:${.12 + i*.06}s"><label class="label" for="${id}">${l}</label><input id="${id}" class="inp" type="password" autocomplete="${ac}"><p class="err" hidden></p></div>`).join("")}
       <div class="fade-up" style="padding-top:8px;animation-delay:.3s"><button type="submit" class="btn btn-primary btn-lg" style="width:100%">Сохранить пароль</button></div>
     </form>
-    <p class="fade-up mt8 t-sm c-muted" style="animation-delay:.36s">Не ваша учётная запись? <a href="#login" class="c-accent">Выйти</a></p>
+    <p class="fade-up mt8 t-sm c-muted" style="animation-delay:.36s">Не ваша учётная запись? <a href="#login" class="c-accent" onclick="event.preventDefault();setRole('login')">Выйти</a></p>
   </div><p class="t-xs c-muted" style="text-align:center">© ООО «Авесто Групп» · только для сотрудников</p></main>`;
 }
 function bindPassword(){
   const f = document.getElementById("pwForm"); if (!f) return;
   document.getElementById("pw1").focus();
-  f.onsubmit = e => { e.preventDefault(); const [a, b, c] = ["pw1","pw2","pw3"].map(id => document.getElementById(id)); const errs = [a.value ? "" : "Введите текущий пароль", b.value.length >= 10 ? "" : "Не короче 10 символов", c.value === b.value && c.value ? "" : "Пароли не совпадают"];
+  f.onsubmit = e => { e.preventDefault(); const [a, b, c] = ["pw1","pw2","pw3"].map(id => document.getElementById(id)); const errs = [a.value ? "" : "Введите текущий пароль", b.value.length < 10 ? "Пароль должен быть не короче 10 символов" : b.value === a.value ? "Новый пароль должен отличаться от текущего" : "", !c.value ? "Повторите новый пароль" : c.value === b.value ? "" : "Пароли не совпадают"];
     [a, b, c].forEach((el, i) => { const er = el.nextElementSibling; er.hidden = !errs[i]; er.textContent = errs[i]; el.setAttribute("aria-invalid", !!errs[i]); });
-    if (errs.every(x => !x)) { toast("Пароль изменён"); go(S.backTo || "m.plan"); } };
+    if (!errs.every(x => !x)) return;
+    if (!DB) { toast("Пароль изменён"); go(S.backTo || "m.plan"); return; }
+    const btn = f.querySelector("button[type=submit]"); btn.disabled = true; btn.textContent = "Сохраняем…";
+    changePasswordDB(a.value, b.value).then(res => {
+      btn.disabled = false; btn.textContent = "Сохранить пароль";
+      if (res.ok) { toast("Пароль изменён"); go(HOME[loadSession()?.role] || "login"); return; }
+      const el = [a, b, c][res.field ?? 0], er = el.nextElementSibling; er.hidden = false; er.textContent = res.error; el.setAttribute("aria-invalid", true);
+    }); };
 }
 
 /* ===================== Рендер ===================== */
@@ -1175,15 +1249,27 @@ function countUp(root){
 function render(keep){
   closeOverlays();
   const r = route(), app = document.getElementById("app");
+  if (DB) {
+    const s = loadSession();
+    if (!s) { if (r.area !== "login") { location.replace("#login"); return; } }
+    else {
+      const mine = s.role, area = USERS[mine].area;
+      if (r.area === "login" || (["a","c","m"].includes(r.area) && r.area !== area) || (r.page === "hr" && mine !== "sa")) { location.replace("#" + HOME[mine]); return; }
+      if (s.mustChange && r.area !== "pw") { location.replace("#pw"); return; }
+      S.role = mine; S.user = { ...USERS[mine], name: s.name || USERS[mine].name, email: s.email };
+    }
+  }
   if (r.area === "rep") { document.body.classList.remove("has-bottom"); app.innerHTML = ReportPage(r.page); document.title = "Отчёт по плану · Авесто ИПР"; lucide.createIcons(); return; }
   if (r.area === "pw") { document.body.classList.remove("has-bottom"); app.innerHTML = PasswordPage(); document.title = "Смена пароля · Авесто ИПР"; lucide.createIcons(); bindPassword(); return; }
   if (r.area === "login" || !["a","c","m"].includes(r.area)) {
     document.body.classList.remove("has-bottom"); app.innerHTML = LoginPage(); document.title = "Вход · Авесто ИПР";
     bindLogin(); lucide.createIcons(); return;
   }
-  const want = r.area === "a" ? (S.role === "sa" ? "sa" : "hr") : r.area === "c" ? "cur" : "mgr";
-  S.role = want; S.user = USERS[want];
-  if (r.area === "a" && r.page === "hr" && S.role !== "sa") { S.role = "sa"; S.user = USERS.sa; }
+  if (!DB) {
+    const want = r.area === "a" ? (S.role === "sa" ? "sa" : "hr") : r.area === "c" ? "cur" : "mgr";
+    S.role = want; S.user = USERS[want];
+    if (r.area === "a" && r.page === "hr" && S.role !== "sa") { S.role = "sa"; S.user = USERS.sa; }
+  }
   const P = {
     a: { dashboard:AdminDashboard, analytics:Analytics, review:AdminReview, deadlines:Deadlines, managers:ManagersPage, manager:() => ManagerCard(r.id, r.tab, "a"), plan:() => PlanPage(r.id), curators:CuratorsPage, curator:() => CuratorPage(r.id), assessments:AssessmentsPage, library:LibraryPage, companies:CompaniesPage, settings:SettingsPage, audit:AuditPage, hr:HrPage, hrp:() => HrPerson(r.id) },
     c: { wards:CuratorWards, ward:() => ManagerCard(r.id, r.tab, "c"), review:CuratorReview, notifications:() => NotificationsPage("cur") },
@@ -1198,7 +1284,7 @@ function render(keep){
   lucide.createIcons();
   if (!keep) countUp(app); else app.querySelectorAll("[data-count]").forEach(el => el.textContent = el.dataset.count);
 }
-render();
+if (DB) ensureFresh().then(() => render()); else render();
 </script>
 
 </body>
