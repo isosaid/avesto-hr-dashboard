@@ -258,7 +258,7 @@ th.sortable::after{content:"⇅";font-size:10px;opacity:.35;margin-left:5px}
 <div id="app" style="display:none">
 <nav>
   <div class="nav-in">
-    <span class="nav-label">Обучение персонала <b style="font-weight:600;color:var(--green);font-size:11px">v11</b></span>
+    <span class="nav-label">Обучение персонала <b style="font-weight:600;color:var(--green);font-size:11px">v12</b></span>
     <button class="tab" data-tab="q1"><span class="t">I квартал</span><span class="s">Янв — Мар 2026</span></button>
     <button class="tab on" data-tab="q2"><span class="t">II квартал</span><span class="s">Апр — Июн 2026</span></button>
     <button class="tab" data-tab="q3"><span class="t">III квартал</span><span class="s">Июл — Сен 2026</span></button>
@@ -396,7 +396,9 @@ const COMPANY_COLORS={
 };
 const NO_COURSE=['Зет Мобайл','Олуча','Сиёма','Сити Лайн','Артел','КОД','Филизот',
   'Сити Кард','Сити Сервис','Осиё Кемикал','Неру','Доро','Композит','Арвис'];
-const META={q1:{p:288},q2:{p:294},q3:{p:0},q4:{p:0},h1:{p:582},year:{p:582}};
+// Авторитетное число УНИКАЛЬНЫХ участников из ТЗ — только для закрытых кварталов 2026.
+// Для остальных кварталов участники считаются из базы (сумма по курсам).
+const CURATED={q1:288,q2:294};
 
 const YEARS=[2024,2025,2026,2027,2028];
 let isAdmin=false, myCompany=null;
@@ -416,7 +418,15 @@ function sameCompany(listName,company){
   return names.includes(norm(listName));
 }
 const myNeeds=()=>isAdmin?NEEDS:NEEDS.filter(n=>(n.companies||[]).some(c=>sameCompany(c,myCompany)));
-const useMeta=k=>isAdmin&&!filterCompany&&!filterMonth&&curYear===2026&&META[k];
+function participantsFor(tab,rows){
+  // при фильтрах, у неадминов и для других лет — всегда считаем из базы
+  if(!(isAdmin&&!filterCompany&&!filterMonth&&curYear===2026))
+    return rows.reduce((a,r)=>a+(r.participants||0),0);
+  // сводные периоды складываются поквартально: закрытые кварталы — из ТЗ, остальные — из базы
+  return (PERIOD_QUARTERS[tab]||[tab]).reduce((sum,q)=>sum+(CURATED[q]!=null?CURATED[q]
+    :allCourses.filter(c=>c.quarter===q&&(c.year||2026)===curYear)
+               .reduce((a,r)=>a+(r.participants||0),0)),0);
+}
 let curYear=2026;
 let allCourses=[], companies=[], curTab='q2', curUser=null, sortKey=null, sortDir=1, editId=null, filterCompany=null, filterMonth=null;
 const fmt=n=>Number(n||0).toLocaleString('ru-RU');
@@ -574,7 +584,7 @@ function renderTab(tab){
 function kpiCards(tab,rows){
   const comps=new Set(rows.map(r=>r.company)).size;
   const cost=rows.reduce((a,r)=>a+(Number(r.cost_num)||0),0);
-  const parts=useMeta(tab)?META[tab].p:rows.reduce((a,r)=>a+(r.participants||0),0);
+  const parts=participantsFor(tab,rows);
   const n=rows.length;
   return `<div class="kpi-grid">${[
     ['book',fmt(n),'Кол-во проведённых курсов','courses'],
@@ -589,13 +599,13 @@ function periodExtras(tab){
   const LABEL={q1:['I квартал','Январь — Март','b'],q2:['II квартал','Апрель — Июнь','a'],
                q3:['III квартал','Июль — Сентябрь','c'],q4:['IV квартал','Октябрь — Декабрь','d']};
   const cards=qs.map(q=>{
-    const rows=allCourses.filter(c=>c.quarter===q);
+    const rows=filterCourses(q);
     const [name,sub,cls]=LABEL[q];
     const sum=rows.reduce((a,r)=>a+(Number(r.cost_num)||0),0);
     return `<div class="cmp"><div class="cmp-h"><span class="qbadge ${cls}">${name}</span><span style="font-size:14px;color:var(--gray500)">${sub}</span></div>
       <div class="cmp-3">
         <div><div class="cv">${rows.length}</div><div class="cl">курсов</div></div>
-        <div><div class="cv">${fmt(useMeta(q)?META[q].p:rows.reduce((a,r)=>a+(r.participants||0),0))}</div><div class="cl">участников</div></div>
+        <div><div class="cv">${fmt(participantsFor(q,rows))}</div><div class="cl">участников</div></div>
         <div><div class="cv">${new Set(rows.map(r=>r.company)).size}</div><div class="cl">компаний</div></div>
       </div><div class="cmp-sum">Сумма: <b>${fmt(sum)} c</b></div></div>`;}).join('');
   const cmp=`<div class="cmp-grid${qs.length>2?' four':''}">${cards}</div>`;
