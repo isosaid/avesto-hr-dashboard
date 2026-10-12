@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body>
+<title>Авесто ИПР</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.460.0/lucide.min.js"></script>
+<style>
+/* Токены — src/app/globals.css (только светлая тема: тёмная в проекте отложена). */
+:root{
+  color-scheme:light;
+  --bg:#ecebe9;--surface:#ffffff;--surface-muted:#f5f4f2;--surface-sunken:#e4e2df;
+  --text:#000000;--text-body:#2d2d2d;--text-secondary:#626262;--text-muted:#6a6a6a;
+  --border:#dedcd8;--border-strong:#c9c6c1;
+  --accent:#47a163;--accent-strong:#2e7346;--accent-soft:rgba(71,161,99,.1);
+  --accent-tint:color-mix(in srgb,var(--accent) 10%,var(--surface));
+  --logo:#246e49;--danger:#b3261e;--danger-soft:rgba(179,38,30,.07);
+  --st-assigned:#6a6a6a;--st-progress:#3e6e8e;--st-review:#7d6329;--st-returned:#a34a30;
+  --st-accepted:#2e7346;--st-cancelled:#6a6a6a;--st-overdue:#b3261e;--st-soon:#8a5c3e;
+  --grid-dot:rgba(0,0,0,.07);--scrim:rgba(19,19,19,.18);--on-inverse:#ffffff;--inverse:#000000;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.06);
+  --shadow-md:0 2px 4px rgba(0,0,0,.05),0 14px 36px rgba(0,0,0,.09);
+  --shadow-lg:0 4px 8px rgba(0,0,0,.04),0 24px 64px rgba(0,0,0,.12);
+  --ease:cubic-bezier(.22,1,.36,1);
+  --serif:"Noto Serif Display",Georgia,"Times New Roman",serif;
+  --sans:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;border-color:var(--border)}
+html{-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--text-body);font-family:var(--sans);font-size:15px;line-height:1.7;overflow-wrap:break-word}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{color:var(--text);font-family:var(--serif);font-weight:400;letter-spacing:.02em;text-wrap:balance}
+ul,ol{margin:0;padding:0;list-style:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+input,select,textarea{font:inherit}
+:focus-visible{outline:2px solid var(--accent-strong);outline-offset:2px;border-radius:4px}
+::selection{background:var(--accent-soft);color:var(--text)}
+.lucide{stroke-width:1.5}
+.tab{font-variant-numeric:tabular-nums}
+.serif{font-family:var(--serif);font-weight:400;letter-spacing:.025em}
+.eyebrow{font-family:var(--sans);font-size:12px;line-height:1.4;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary)}
+.t-xs{font-size:12px;line-height:1.5}.t-sm{font-size:13px;line-height:1.55}.t-base{font-size:15px;line-height:1.7}.t-md{font-size:17px;line-height:1.6}
+.t-lg{font-size:20px;line-height:1.4}.t-xl{font-size:24px;line-height:1.3}
+.c-text{color:var(--text)}.c-body{color:var(--text-body)}.c-sec{color:var(--text-secondary)}.c-muted{color:var(--text-muted)}.c-danger{color:var(--danger)}.c-accent{color:var(--accent-strong)}
+.fw5{font-weight:500}.fw6{font-weight:600}.fw7{font-weight:700}
+.mt1{margin-top:4px}.mt2{margin-top:8px}.mt3{margin-top:12px}.mt4{margin-top:16px}.mt5{margin-top:20px}.mt6{margin-top:24px}.mt8{margin-top:32px}.mt12{margin-top:48px}
+.row{display:flex;align-items:center}.wrap{flex-wrap:wrap}.between{justify-content:space-between}.end{justify-content:flex-end}.grow{flex:1;min-width:0}.shrink0{flex-shrink:0}
+.col{display:flex;flex-direction:column}
+.trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strike{text-decoration:line-through}
+.glass{background:color-mix(in srgb,var(--surface) 78%,transparent);backdrop-filter:saturate(1.4) blur(16px);-webkit-backdrop-filter:saturate(1.4) blur(16px)}
+.dot-grid{background-color:var(--bg);background-image:radial-gradient(circle at 1px 1px,var(--grid-dot) 1px,transparent 0);background-size:24px 24px}
+
+/* Логотип: CSS-маска logo_gorizont.svg (298×92), цвет — токен --logo */
+.logo{display:inline-flex;align-items:center;gap:16px;min-width:0}
+.logo-mark{display:block;flex-shrink:0;background:var(--logo);-webkit-mask:url(logo_gorizont.svg) center/contain no-repeat;mask:url(logo_gorizont.svg) center/contain no-repeat}
+.logo-sep{display:none;width:1px;height:24px;background:var(--border-strong)}
+.logo-sub{display:none;font-family:var(--serif);font-size:17px;line-height:1;letter-spacing:.03em;color:var(--text);white-space:nowrap}
+@media(min-width:900px){.logo-sep{display:block}.logo-sub{display:inline}}
+
+/* Card (surface.tsx): белая панель, мягкая тень, без рамки */
+.card{background:var(--surface);border-radius:16px;box-shadow:var(--shadow-sm);padding:24px}
+.card.p56{padding:20px}.card.p5{padding:20px}.card.p4{padding:16px}.card.p0{padding:0}.card.p4s5{padding:16px}
+@media(min-width:640px){.card{padding:32px}.card.p56{padding:24px}.card.p5{padding:20px}.card.p4{padding:16px}.card.p0{padding:0}.card.p4s5{padding:20px}}
+.card.inter{transition:box-shadow .2s var(--ease),transform .2s var(--ease);cursor:pointer}
+.card.inter:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+
+/* Кнопки (button.tsx) */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;user-select:none;font-family:var(--sans);font-weight:500;letter-spacing:.01em;transition:background-color .3s var(--ease),color .3s var(--ease),border-color .3s var(--ease),transform .3s var(--ease);border-radius:4px;height:44px;padding:0 20px;font-size:15px}
+.btn svg{width:18px;height:18px;flex-shrink:0}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.45;pointer-events:none}
+.btn-primary{background:var(--inverse);color:var(--on-inverse)}
+.btn-primary:hover{background:var(--accent-strong);color:#fff}
+.btn-secondary{background:transparent;color:var(--text);border:1px solid var(--border-strong)}
+.btn-secondary:hover{border-color:var(--text);background:var(--surface-muted)}
+.btn-danger{background:transparent;color:var(--danger);border:1px solid color-mix(in srgb,var(--danger) 35%,transparent)}
+.btn-danger:hover{background:var(--danger-soft);border-color:var(--danger)}
+.btn-text{background:transparent;color:var(--accent-strong);padding:0;height:auto;min-height:44px;text-underline-offset:4px}
+.btn-text:hover{text-decoration:underline}
+.btn-text:active{transform:none}
+.btn-ghost{background:transparent;color:var(--text-body)}
+.btn-ghost:hover{background:var(--surface-muted);color:var(--text)}
+.btn-sm{height:44px;padding:0 14px;font-size:13px}
+@media(min-width:640px){.btn-sm{height:36px}}
+.btn-lg{height:48px;padding:0 28px}
+.btn-icon{width:44px;height:44px;padding:0}
+@media(min-width:640px){.btn-icon.sm{width:36px;height:36px}}
+.btn.text-danger{color:var(--danger)}
+
+/* Поля (input.tsx) */
+.field{display:flex;flex-direction:column;gap:8px}
+.label{display:block;font-size:13px;font-weight:500;color:var(--text-secondary)}
+.label .opt{margin-left:6px;font-weight:400;color:var(--text-muted)}
+.hint{font-size:13px;color:var(--text-muted)}
+.err{font-size:13px;color:var(--danger)}
+.inp{width:100%;height:44px;padding:0 14px;border-radius:4px;background:var(--surface-muted);color:var(--text);border:1px solid transparent;font-size:15px;transition:border-color .2s var(--ease),background-color .2s var(--ease),box-shadow .2s var(--ease)}
+.inp::placeholder{color:var(--text-muted)}
+.inp:hover{border-color:var(--border-strong)}
+.inp:focus-visible,.inp:focus{outline:none;border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px var(--accent-soft);border-radius:4px}
+.inp:disabled{opacity:.5;cursor:not-allowed}
+.inp[aria-invalid=true]{border-color:color-mix(in srgb,var(--danger) 60%,transparent)}
+.inp-wrap{position:relative;display:flex;align-items:center}
+.inp-wrap .lead{position:absolute;left:14px;display:flex;color:var(--text-muted);pointer-events:none}
+.inp-wrap .lead svg,.inp-wrap .trail svg{width:18px;height:18px}
+.inp-wrap .inp.has-lead{padding-left:40px}
+.inp-wrap .inp.has-trail{padding-right:48px}
+.inp-wrap .trail{position:absolute;right:8px;display:flex;align-items:center}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+textarea.inp{height:auto;min-height:112px;padding:10px 14px;line-height:1.6;resize:vertical}
+.sel{position:relative;display:block}
+.sel select{appearance:none;-webkit-appearance:none;width:100%;height:44px;padding:0 40px 0 14px;border-radius:4px;background:var(--surface-muted);color:var(--text);border:1px solid transparent;font-size:15px;cursor:pointer;transition:border-color .2s var(--ease)}
+.sel select:hover{border-color:var(--border-strong)}
+.sel select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.sel svg{position:absolute;right:14px;top:13px;width:18px;height:18px;color:var(--text-muted);pointer-events:none}
+@media(max-width:639.98px){.sel,.inp-wrap{width:100%!important}.inp,.sel select{font-size:16px}}
+.check{position:relative;display:inline-flex;width:20px;height:20px;flex-shrink:0;align-items:center;justify-content:center;border-radius:4px;border:1px solid var(--border-strong);background:var(--surface);appearance:none;-webkit-appearance:none;margin:0;cursor:pointer;transition:background-color .2s,border-color .2s}
+.check:hover{border-color:var(--text)}
+.check:checked{background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/14px no-repeat;border-color:var(--accent)}
+
+/* Бейджи */
+.badge{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:500;letter-spacing:.01em;white-space:nowrap;line-height:1}
+.badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.b-neutral{background:var(--surface-muted);color:var(--text-secondary)}
+.b-accent{background:var(--accent-tint);color:var(--accent-strong)}
+.b-danger{background:var(--danger-soft);color:var(--danger)}
+.st{color:var(--st);background:color-mix(in srgb,var(--st) 10%,var(--surface))}
+.cdot{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ctag{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary)}
+.ctag.t-base{font-size:15px}.ctag.t-lg{font-size:20px}.ctag.c-text{color:var(--text)}
+
+/* Аватар (avatar.tsx) */
+.av{position:relative;display:inline-flex;flex-shrink:0;align-items:center;justify-content:center;overflow:hidden;border-radius:50%;background:var(--surface-muted);box-shadow:0 0 0 2px var(--surface)}
+.av span{font-family:var(--serif);line-height:1;color:var(--text-secondary)}
+.av-xs{width:24px;height:24px}.av-xs span{font-size:10px}
+.av-sm{width:32px;height:32px}.av-sm span{font-size:12px}
+.av-md{width:44px;height:44px}.av-md span{font-size:13px}
+.av-lg{width:64px;height:64px}.av-lg span{font-size:20px}
+
+/* Шапка и навигация (app-header.tsx, side-nav.tsx) */
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;border-bottom:1px solid rgba(222,220,216,.6)}
+.hdr-in{max-width:1600px;margin:0 auto;height:64px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px}
+@media(min-width:640px){.hdr-in{padding:0 24px}}
+.hdr-home{margin:0 -8px;padding:4px 8px;border-radius:4px;min-width:0;transition:opacity .2s}
+.hdr-home:hover{opacity:.75}
+.round-btn{position:relative;display:flex;width:44px;height:44px;align-items:center;justify-content:center;border-radius:50%;color:var(--text-secondary);transition:background-color .2s,color .2s,box-shadow .2s}
+.round-btn:hover{background:var(--surface-muted);color:var(--text)}
+.round-btn svg{width:20px;height:20px}
+.round-btn .cnt{position:absolute;right:4px;top:4px;display:flex;height:18px;min-width:18px;align-items:center;justify-content:center;border-radius:999px;background:var(--accent-strong);padding:0 4px;font-size:11px;font-weight:500;color:#fff;font-variant-numeric:tabular-nums;line-height:1}
+.user-btn:hover,.user-btn.open{background:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.burger{margin-right:4px}
+@media(min-width:1024px){.burger{display:none}}
+.body{max-width:1600px;margin:0 auto;display:flex}
+.side{position:sticky;top:64px;display:none;height:calc(100dvh - 64px);width:240px;flex-shrink:0;flex-direction:column;gap:4px;border-right:1px solid rgba(222,220,216,.6);padding:24px 12px;overflow-y:auto}
+@media(min-width:1024px){.side{display:flex}}
+.nav{display:flex;min-height:44px;align-items:center;gap:12px;border-radius:8px;padding:0 12px;font-size:15px;color:var(--text-body);transition:background-color .15s,color .15s;text-align:left;width:100%}
+.nav svg{width:18px;height:18px;color:var(--text-muted);flex-shrink:0}
+.nav:hover{background:var(--surface-muted);color:var(--text)}
+.nav.on{background:var(--accent-tint);font-weight:500;color:var(--accent-strong)}
+.nav.on svg{color:var(--accent-strong)}
+.nav .lbl{flex:1;line-height:1.45;padding:6px 0}
+.nav .nb{display:flex;height:20px;min-width:20px;align-items:center;justify-content:center;border-radius:999px;background:var(--accent-strong);padding:0 6px;font-size:12px;font-weight:500;color:#fff;font-variant-numeric:tabular-nums;line-height:1}
+.main{min-width:0;flex:1;padding:32px 16px 96px}
+@media(min-width:640px){.main{padding:48px 32px 96px}}
+.main.my{padding-bottom:64px}
+.inner{max-width:1280px;margin:0 auto}
+.main.my .inner{max-width:896px}
+.bottom{position:fixed;inset:auto 0 0 0;z-index:30;display:flex;border-top:1px solid rgba(222,220,216,.6);padding-bottom:env(safe-area-inset-bottom,0px)}
+.bottom a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:64px;font-size:12px;color:var(--text-secondary);position:relative}
+.bottom a svg{width:22px;height:22px}
+.bottom a.on{color:var(--accent-strong)}
+.bottom a .cnt{position:absolute;top:8px;left:calc(50% + 6px);height:16px;min-width:16px;border-radius:99px;background:var(--accent-strong);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+@media(min-width:768px){.bottom{display:none}}
+@media(max-width:767.98px){body.has-bottom{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}}
+
+/* Popover / меню */
+.pop{position:fixed;z-index:50;border-radius:16px;background:var(--surface);padding:8px;box-shadow:var(--shadow-lg);animation:popIn .22s var(--ease)}
+@keyframes popIn{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+.mi{display:flex;min-height:44px;width:100%;align-items:center;gap:12px;border-radius:8px;padding:0 12px;font-size:15px;color:var(--text-body);text-align:left}
+.mi:hover{background:var(--surface-muted);color:var(--text)}
+.mi svg{width:18px;height:18px;color:var(--text-muted)}
+.mi.on{background:var(--accent-tint);color:var(--accent-strong);font-weight:500}
+.mi.on svg{color:var(--accent-strong)}
+.sep{height:1px;background:var(--border);margin:4px 8px}
+
+/* Заголовок страницы (page-title.tsx) */
+.ptitle{display:flex;flex-direction:column;gap:16px}
+.ptitle h1{font-size:32px;line-height:1.25}
+.ptitle .sub{margin-top:8px;max-width:600px;font-size:15px;color:var(--text-secondary)}
+@media(min-width:640px){.ptitle{flex-direction:row;align-items:flex-end;justify-content:space-between}.ptitle h1{font-size:44px}}
+.back{display:inline-flex;min-height:44px;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);transition:color .2s}
+.back:hover{color:var(--text)}
+.back svg{width:16px;height:16px}
+
+/* Плитки (stat-tile.tsx) */
+.tiles{display:grid;gap:16px}
+@media(min-width:640px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1280px){.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tiles.four{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(min-width:640px){.tiles.four{gap:16px}}
+@media(min-width:1024px){.tiles.four{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tile .num{margin-top:8px;font-family:var(--serif);font-size:44px;line-height:1.1;letter-spacing:.025em;font-variant-numeric:tabular-nums;color:var(--text)}
+.tile .h{margin-top:4px;font-size:13px;color:var(--text-secondary)}
+
+/* Прогресс (plan-progress.tsx) и полосы */
+.prog .n{font-family:var(--serif);font-size:24px;color:var(--text);letter-spacing:.025em;line-height:1.3}
+.prog.cmp .n{font-size:20px}
+.bar{margin-top:8px;height:6px;width:100%;overflow:hidden;border-radius:999px;background:var(--surface-sunken)}
+.prog.cmp .bar{margin-top:6px;height:4px}
+.bar i,.meter i{display:block;height:100%;border-radius:999px;background:var(--accent);transform-origin:left;animation:grow .7s var(--ease) both}
+@keyframes grow{from{transform:scaleX(0)}}
+.meter{height:4px;width:100%;overflow:hidden;border-radius:999px;background:var(--surface-muted)}
+
+/* Таблицы */
+.tbl{width:100%;table-layout:fixed;border-collapse:collapse;text-align:left;font-size:15px}
+.tbl thead tr{border-bottom:1px solid var(--border)}
+.tbl th{overflow-wrap:normal;font-size:12px;line-height:1.4;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);padding:12px;vertical-align:bottom}
+.tbl td{padding:12px;vertical-align:middle}
+.tbl th:first-child,.tbl td:first-child{padding-left:20px}
+.tbl th:last-child,.tbl td:last-child{padding-right:20px}
+.tbl tbody tr{border-bottom:1px solid rgba(222,220,216,.7)}
+.tbl tbody tr:last-child{border-bottom:0}
+.tbl.hov tbody tr:hover{background:rgba(245,244,242,.6)}
+.scroll-x{overflow-x:auto}
+.lnk{color:var(--text);transition:color .2s}
+.lnk:hover{color:var(--accent-strong)}
+.divide>li+li{border-top:1px solid var(--border)}
+.pill-count{display:inline-flex;height:28px;align-items:center;border-radius:999px;background:var(--surface-muted);padding:0 12px;vertical-align:middle;font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:0;color:var(--text-body);margin-left:12px}
+
+/* Вкладки (tabs.tsx) */
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--border);margin-bottom:-1px}
+.tabs button{position:relative;display:flex;height:44px;flex-shrink:0;align-items:center;gap:8px;padding:0 12px;font-size:15px;color:var(--text-secondary);transition:color .15s}
+.tabs button:hover{color:var(--text)}
+.tabs button.on{color:var(--text)}
+.tabs button.on::after{content:"";position:absolute;left:12px;right:12px;bottom:0;height:2px;border-radius:999px;background:var(--accent)}
+
+/* Карточка задачи (task-card.tsx) */
+.task{position:relative;display:flex;width:100%;align-items:flex-start;gap:16px;border-radius:12px;background:var(--surface);padding:16px;text-align:left;box-shadow:var(--shadow-sm)}
+@media(min-width:640px){.task{padding:20px}}
+.task.click{cursor:pointer;transition:box-shadow .2s var(--ease),transform .2s var(--ease)}
+.task.click:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.task .ov{position:absolute;top:16px;bottom:16px;left:0;width:2px;border-radius:999px;background:var(--st-overdue)}
+.task .tt{font-size:15px;font-weight:600;line-height:1.375;color:var(--text)}
+@media(min-width:640px){.task .tt{font-size:17px}}
+.task .meta{margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px}
+.task.cancelled{background:color-mix(in srgb,var(--surface) 92%,var(--surface-muted));opacity:.85}
+.dl{font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.dl.over{font-weight:600;color:var(--st-overdue)}.dl.soon{font-weight:500;color:var(--st-soon)}.dl.norm{color:var(--text-secondary)}
+
+/* Тепловая карта */
+.heat{width:100%;min-width:880px;table-layout:fixed;border-collapse:separate;border-spacing:2px;font-size:13px}
+.hc{display:flex;height:48px;align-items:center;justify-content:center;border-radius:6px;font-size:15px;font-variant-numeric:tabular-nums}
+
+/* Анимации появления */
+.fade-up{animation:fadeUp .45s var(--ease) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.page{animation:pageIn .3s var(--ease) both}
+@keyframes pageIn{from{opacity:0}to{opacity:1}}
+
+/* Роза: вход (login/rose-lines.tsx) */
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw var(--d,1.6s) var(--ease) var(--delay,0s) forwards;opacity:0}
+@keyframes draw{0%{stroke-dashoffset:1;opacity:0}15%{opacity:1}100%{stroke-dashoffset:0;opacity:1}}
+.fadein{opacity:0;animation:fadeIn var(--d,1.8s) var(--ease) var(--delay,0s) forwards}
+@keyframes fadeIn{to{opacity:1}}
+.rose-in{transform-origin:center;animation:roseIn .6s var(--ease) both}
+@keyframes roseIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+
+/* Вход */
+.login{display:grid;min-height:100dvh}
+@media(min-width:1024px){.login{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}}
+.login-dark{position:relative;display:none;overflow:hidden;background:#131313;color:#fff;--logo:#5BB377}
+@media(min-width:1024px){.login-dark{display:flex;flex-direction:column;justify-content:space-between}}
+.login-dark .phrase{max-width:12ch;font-family:var(--serif);font-size:56px;line-height:1.05;letter-spacing:.015em;color:#fff}
+@media(min-width:1280px){.login-dark .phrase{font-size:68px}}
+.login-light{position:relative;display:flex;flex-direction:column;background:var(--bg);padding:32px 24px}
+@media(min-width:640px){.login-light{padding:32px 48px}}
+@media(min-width:1024px){.login-light{background:var(--surface)}.login-light .mob-logo{visibility:hidden}}
+
+/* Диалог, панель, тост */
+.scrim{position:fixed;inset:0;z-index:60;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding:16px;animation:pageIn .2s var(--ease)}
+.dlg{width:100%;max-width:520px;max-height:92dvh;overflow-y:auto;border-radius:20px;background:var(--surface);padding:28px;box-shadow:var(--shadow-lg);animation:popIn .25s var(--ease)}
+.dlg h2{font-size:24px;line-height:1.3}
+.sheet-scrim{justify-content:flex-end;align-items:stretch;padding:0}
+.sheet{width:min(720px,100%);height:100%;overflow-y:auto;background:var(--surface);box-shadow:var(--shadow-lg);animation:slideIn .35s var(--ease)}
+@keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+.toast{position:fixed;left:50%;bottom:24px;z-index:80;transform:translateX(-50%);display:flex;align-items:center;gap:10px;border-radius:12px;background:var(--inverse);color:var(--on-inverse);padding:12px 18px;font-size:15px;box-shadow:var(--shadow-lg);animation:fadeUp .3s var(--ease)}
+.toast svg{width:18px;height:18px;color:#5BB377}
+body.has-bottom .toast{bottom:88px}
+
+/* Демо-переключатель ролей (не часть интерфейса продукта) */
+.demo{position:fixed;left:16px;bottom:16px;z-index:70;display:flex;align-items:center;gap:8px;border-radius:999px;background:rgba(0,0,0,.82);color:#fff;padding:6px 6px 6px 14px;font-size:12px;box-shadow:var(--shadow-md)}
+.demo select{appearance:none;-webkit-appearance:none;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font-size:12px;padding:6px 26px 6px 10px;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;background-size:12px}
+.demo select option{color:#000}
+
+
+.grid2{display:grid;gap:24px}
+@media(min-width:1024px){.grid2.acc{grid-template-columns:minmax(0,1fr) 320px}.grid2.plan{grid-template-columns:300px minmax(0,1fr)}.grid2.half{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1264px){.grid2.rose{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}}
+.cards3{display:grid;gap:16px}
+@media(min-width:640px){.cards3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1280px){.cards3{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:1024px){.main.my .grid2.rose{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}.sum2{columns:2;column-gap:48px}}
+.sum2 p{break-inside:avoid}
+.att{display:flex;min-height:36px;align-items:center;gap:10px;border-radius:12px;background:var(--surface-muted);padding:8px 12px;font-size:13px;color:var(--text)}
+.att svg{width:16px;height:16px;color:var(--text-muted);flex-shrink:0}
+.only-lg{display:none}@media(min-width:1024px){.only-lg{display:block}.no-lg{display:none}}
+.only-md{display:none!important}@media(min-width:768px){.only-md{display:flex!important}.no-md{display:none}}
+.empty{display:flex;flex-direction:column;align-items:center;padding:56px 24px;text-align:center}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:1ms!important;animation-delay:0s!important;transition-duration:1ms!important}}
+</style>
+
+<div id="app"></div>
+
+<script>
+/* ===================== Утилиты ===================== */
+const PR = new Intl.PluralRules("ru");
+function plural(n, f){ const r = PR.select(n); return r === "one" ? f[0] : r === "few" ? f[1] : f[2]; }
+function fmtScore(v){ return (Math.round(v*10)/10).toLocaleString("ru",{maximumFractionDigits:1}); }
+function fmtDate(iso){ const [y,m,d] = iso.slice(0,10).split("-"); return `${d}-${m}-${y}`; }
+function pad(n){ return String(n).padStart(2,"0"); }
+function fmtDT(dt){ return `${pad(dt.getDate())}-${pad(dt.getMonth()+1)}-${dt.getFullYear()}, ${pad(dt.getHours())}:${pad(dt.getMinutes())}`; }
+function initials(name){ return name.trim().split(/\s+/).slice(0,2).map(p => p[0].toLocaleUpperCase("ru")).join(""); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function hash(s){ let h = 2166136261; for (const ch of String(s)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0); }
+function rnd(seed){ return (hash(seed) % 10000) / 10000; }
+const ic = (n, cls="") => `<i data-lucide="${n}"${cls ? ` class="${cls}"` : ""}></i>`;
+const collator = new Intl.Collator("ru");
+
+/* ===================== Данные (по правилам audit/seed-volume.ts) ===================== */
+const COLORS = ["#5A5F9C","#A0813F","#7A5C8E","#4F8A8B","#8E5C6E","#5E6B3A","#6B7C93","#9A6A4A"];
+const COMPS = Array.from({length:8}, (_, i) => ({ id:"k"+(i+1), name:"Компетенция "+(i+1), group:"Группа "+(i<3?1:i<6?2:3), color:COLORS[i], active:true }));
+const compById = id => COMPS.find(c => c.id === id);
+const LONG_CO = "Общество с ограниченной ответственностью «Авесто Ҳолдинг Ғизо ва Қурилиш Интернешнл»";
+const COMPANIES = Array.from({length:20}, (_, i) => ({ id:"co"+(i+1), name:"Компания "+pad(i+1), active:true, managers:10 }));
+COMPANIES.push({ id:"co21", name:LONG_CO, active:true, managers:1 });
+const coName = id => COMPANIES.find(c => c.id === id)?.name ?? "";
+const CUR_AVG = {1:1.5,2:1.4,3:1.5,4:1.5,5:1.4,6:1.4,7:1.5,8:1.4,9:1.4,10:1.5,11:1.4,12:1.4,13:1.5,14:1.4,15:1.5,16:1.4,17:1.5,18:1.4,19:1.5,20:1.6};
+const CURATORS = Array.from({length:20}, (_, i) => {
+  const n = i + 1, idle = n % 10 === 0;
+  return { id:"c"+n, n, name:"Куратор Қурбонов "+n, position:"Заместитель директора", email:`curator${pad(n)}@audit.test`, managers: n === 1 ? 11 : 10, avg: CUR_AVG[n], waiting: idle ? 0 : (n === 1 ? 21 : 20), delayed: idle ? 0 : 20 };
+});
+const curById = id => CURATORS.find(c => c.id === id);
+
+const ABD_POS = "Заместитель генерального директора по финансово-экономическим вопросам и стратегическому развитию";
+const PROVIDER = "Международный центр оценки персонала «Ассессмент Ҳамкорӣ»";
+const MANAGERS = [{ id:"abd", n:0, name:"Абдураҳмонзода Ҷамшеджон Ғуломқодирович", position:ABD_POS, company:"co21", curator:"c1", email:"long@audit.test", phone:"+992 900 00 00 00", draft:false, done:1, total:5, percent:20, risk:"high", overdue:1, review:1, login:"2026-09-30" }];
+for (let N = 1; N <= 200; N++) {
+  const k = ((N - 1) % 20) + 1, draft = N % 10 === 0;
+  MANAGERS.push({ id:"g"+N, n:N, name:"Руководитель Ғаниев "+N, position:"Генеральный директор", company:"co"+k, curator:"c"+k, email:`manager${N}@audit.test`, phone:null, draft, done: draft ? 0 : 4, total: draft ? 0 : 13, percent: draft ? 0 : 31, risk: draft ? null : "high", overdue: draft ? 0 : 6, review: draft ? 0 : 2, login:`2026-09-${pad(30 - Math.round(N / 24))}` });
+}
+MANAGERS.sort((a, b) => collator.compare(a.name, b.name));
+const mgrById = id => MANAGERS.find(m => m.id === id);
+
+/* Оценки: у Абдураҳмонзода — со скриншота; у остальных — детерминированно */
+const ABD_SCORES = [1.8, 2.6, 3.4, 4.2, 1, 1.8, 2.6, 3.4];
+function scoresOf(m){ return m.id === "abd" ? ABD_SCORES : COMPS.map((c, i) => Math.round((1.6 + rnd(m.id + c.id) * 2.8) * 10) / 10); }
+const SUMMARY = Array(40).fill("Итог оценки.").join(" ");
+
+/* Задачи плана Абдураҳмонзода (скриншоты «Конструктор ИПР» и «Мой план») */
+const LONG_T = "Разработать и внедрить систему еженедельной обратной связи для руководителей филиалов Ҳисор, Ғончӣ и Кӯрғонтеппа с измеримыми показателями вовлечённости и отчётом для совета директоров холдинга";
+const SHORT_T = "Разработать и внедрить систему еженедельной обратной связи для руководителей фил";
+const ABD_TASKS = [
+  { id:"t1", title:LONG_T, comp:"k1", type:"Практика", dl:{kind:"soon", days:3}, deadline:"2026-10-03", sub:"30/30", status:"on_review" },
+  { id:"t2", title:LONG_T, comp:"k2", type:"Практика", dl:{kind:"soon", days:3}, deadline:"2026-10-03", sub:"15/30", status:"in_progress" },
+  { id:"t3", title:SHORT_T+" — 2", comp:"k3", type:"Практика", dl:{kind:"overdue", days:10}, deadline:"2026-09-20", sub:"1/3", status:"assigned" },
+  { id:"t4", title:SHORT_T+" — 3", comp:"k4", type:"Практика", dl:{kind:"norm"}, deadline:"2026-10-03", sub:"1/3", status:"accepted" },
+  { id:"t5", title:SHORT_T+" — 4", comp:"k5", type:"Практика", dl:{kind:"soon", days:3}, deadline:"2026-10-03", sub:"1/3", status:"returned" },
+  { id:"t6", title:SHORT_T+" — 5", comp:"k6", type:"Практика", dl:{kind:"norm"}, deadline:"2026-10-03", sub:"1/3", status:"cancelled" },
+];
+const PLAN_TITLE_ABD = "Индивидуальный план развития на 2026 год: финансовое лидерство, стратегия и развитие команды";
+function planOf(m){
+  if (m.id === "abd") return { id:"abd", title:PLAN_TITLE_ABD, status:"active", start:"2026-01-01", end:"2026-12-31", launched:"2026-01-10", tasks:ABD_TASKS, done:1, total:5, percent:20 };
+  const pn = 1 + (hash(m.id) % 560);
+  if (m.draft) return { id:m.id, title:"План развития 2026", status:"draft", start:"2026-01-01", end:"2026-12-31", launched:null, tasks: Array.from({length:4}, (_, i) => ({ id:m.id+"t"+i, title:`Задача ${i+1} плана ${pn}`, comp:COMPS[i*2].id, type:"Практика", dl:{kind:"norm"}, deadline:"2026-11-30", sub:"0/3", status:"assigned" })), done:0, total:4, percent:0 };
+  const tasks = [];
+  for (let i = 1; i <= 13; i++) {
+    const comp = COMPS[(i - 1) % 8].id;
+    let status = "assigned", dl = {kind:"norm"}, deadline = "2026-11-30";
+    if (i <= 4) { status = "accepted"; deadline = "2026-06-30"; }
+    else if (i === 5 || i === 6) { status = "on_review"; deadline = "2026-07-15"; }
+    else if (i <= 12) { status = i % 2 ? "in_progress" : "assigned"; dl = {kind:"overdue", days: 10 + i}; deadline = "2026-09-15"; }
+    tasks.push({ id:m.id+"t"+i, title:`Задача ${i} плана ${pn}`, comp, type:"Практика", dl, deadline, sub:"1/3", status });
+  }
+  return { id:m.id, title:"План развития 2026", status:"active", start:"2026-01-01", end:"2026-12-31", launched:"2026-01-10", tasks, done:4, total:13, percent:31 };
+}
+
+/* Очередь проверки: куратор 1 — ровно как на скриншоте; остальные — по тому же правилу */
+const QUEUE_C1 = [
+  [5,24,61,107,1],[5,486,81,107,1],[5,321,101,107,1],[5,156,141,107,1],
+  [5,141,1,104,2],[5,33,21,104,2],[5,549,41,104,2],[5,57,121,104,2],[5,462,161,104,2],[5,231,181,104,2],
+  [6,549,41,88,1],[6,24,61,88,1],[6,57,121,88,1],[6,462,161,88,1],[6,231,181,88,1],
+  [6,141,1,86,2],[6,33,21,86,2],[6,486,81,86,2],[6,321,101,86,2],[6,156,141,86,2],
+];
+function queueFor(cn){
+  const out = [];
+  if (cn === 1) {
+    QUEUE_C1.forEach(([t, p, g, days, v], i) => out.push({ id:`q1-${i}`, title:`Задача ${t} плана ${p}`, mid:"g"+g, comp:"k"+t, days, version:v, delayed:true, curator:"c1" }));
+    out.push({ id:"q1-abd", title:LONG_T, mid:"abd", comp:"k1", days:3, version:1, delayed:false, curator:"c1" });
+    return out;
+  }
+  if (cn % 10 === 0) return out;
+  for (let k = 0; k < 10; k++) {
+    const g = cn + 20 * k, p = 1 + (hash("p" + g) % 560), v2 = k % 2 === 1;
+    out.push({ id:`q${cn}-${k}a`, title:`Задача 5 плана ${p}`, mid:"g"+g, comp:"k5", days: v2 ? 104 : 107, version: v2 ? 2 : 1, delayed:true, curator:"c"+cn });
+    out.push({ id:`q${cn}-${k}b`, title:`Задача 6 плана ${p}`, mid:"g"+g, comp:"k6", days: v2 ? 86 : 88, version: v2 ? 2 : 1, delayed:true, curator:"c"+cn });
+  }
+  return out.sort((a, b) => b.days - a.days);
+}
+const ALL_QUEUE = CURATORS.flatMap(c => queueFor(c.n)).sort((a, b) => (b.delayed - a.delayed) || (b.days - a.days));
+
+/* Аналитика — значения со скриншота «Аналитика» */
+const HEAT_TOTAL = [3.1, 2.9, 3, 2.9, 2.9, 3.1, 3.1, 3];
+const HEAT_ROWS = { co1:[3.4,3.7,3,3,3.1,3.8,3.5,2.7], co2:[3,3.2,3.1,2.5,2.8,3.3,3.4,3.2], co3:[3.3,2.3,3,3,3.7,2.8,2.4,3], co4:[2.6,2.8,2.4,3.1,2.4,3.1,2.9,3.2], co5:[3.4,3.4,2.6,3.7,3.1,2.9,3.1,3.1], co21:ABD_SCORES };
+function heatRow(co){ return HEAT_ROWS[co.id] ?? COMPS.map((c, i) => Math.round((2.3 + rnd(co.id + c.id) * 1.5) * 10) / 10); }
+const GAPS = [["k5",109,2.9],["k2",107,2.9],["k3",106,3],["k4",101,2.9],["k8",99,3]];
+const CUR_STATS = { 1:[11,150,1.5,100,59,21,20], 13:[10,163,1.5,100,63,20,20], 15:[10,147,1.5,100,59,20,20], 17:[10,156,1.5,100,62,20,20], 19:[10,141,1.5,100,57,20,20] };
+function curStat(c){ return CUR_STATS[c.n] ?? [c.managers, c.waiting ? 140 + (hash(c.id) % 30) : 100 + (hash(c.id) % 30), c.avg, 100, 55 + (hash(c.id) % 9), c.waiting, c.delayed]; }
+const LOW_USEFUL = [[27,188,1],[51,183,1],[57,121,1],[60,179,1],[96,58,2],[114,64,1],[123,128,1],[183,95,2],[342,154,2],[390,47,1]];
+const USEFUL = {1:"Бесполезно",2:"Мало пользы",3:"Полезно отчасти",4:"Полезно",5:"Очень полезно"};
+
+/* Пользователи демо */
+const USERS = {
+  hr:  { role:"hr", area:"a", name:"Назарова Мадина Рустамовна", email:"hr@audit.test", title:"HR-отдел" },
+  sa:  { role:"sa", area:"a", name:"Суперадмин Аудит", email:"superadmin@audit.test", title:"Суперадмин" },
+  cur: { role:"cur", area:"c", name:"Куратор Қурбонов 1", email:"curator01@audit.test", title:"Куратор" },
+  mgr: { role:"mgr", area:"m", name:"Абдураҳмонзода Ҷамшеджон Ғуломқодирович", email:"long@audit.test", title:"Руководитель" },
+};
+
+/* Уведомления */
+const CUR_N_DATES = [[29,14,27],[27,7,10],[27,1,33],[26,7,12],[23,20,55],[16,12,40],[13,14,53],[12,1,14],[6,1,18]];
+const NOTIF = {
+  mgr: [{ id:"n1", kind:"task.returned", at:new Date(2026,8,30,16,13), read:false, text:`Задача «${LONG_T}» возвращена на доработку` }],
+  cur: Array.from({length:100}, (_, i) => { const d = CUR_N_DATES[i]; const at = d ? new Date(2026,8,d[0],d[1],d[2]) : new Date(new Date(2026,8,5,22,0).getTime() - (i - 8) * (36 + hash("n" + i) % 900) * 60000); return { id:"cn"+i, kind:"task.submitted", at, read: i < 6 || i === 7 || i === 8 ? true : (i === 6 ? false : hash("r" + i) % 100 < 30), text:"Отчёт на проверку" }; }),
+  hr: [], sa: [],
+};
+const KINDS = {
+  "task.accepted":{label:"Принято",color:"var(--st-accepted)",icon:"circle-check"},
+  "task.returned":{label:"Возвращено на доработку",color:"var(--danger)",icon:"undo-2"},
+  "task.submitted":{label:"Отправлено на проверку",color:"var(--st-review)",icon:"send"},
+  "review.waiting":{label:"Ждёт проверки",color:"var(--st-review)",icon:"hourglass"},
+};
+
+const STATUS = { assigned:["Назначена","--st-assigned"], in_progress:["В работе","--st-progress"], on_review:["На проверке","--st-review"], returned:["На доработке","--st-returned"], accepted:["Принята","--st-accepted"], cancelled:["Отменена","--st-cancelled"] };
+
+/* Состояние */
+const S = { role:null, more:{}, page:{}, q:{}, sel:{}, compsOff:{}, cosOff:{}, readAll:{}, self:null, menu:null, competencies:COMPS.slice() };
+
+/* ===================== Мелкие компоненты ===================== */
+function Avatar(name, size="sm"){ return `<span class="av av-${size}" title="${esc(name)}"><span>${esc(initials(name))}</span></span>`; }
+function Badge(text, tone="neutral", dot=false, extra=""){ return `<span class="badge b-${tone}${extra}">${dot ? '<span class="dot"></span>' : ""}${text}</span>`; }
+function StatusBadge(s, cls=""){ const [t, v] = STATUS[s]; return `<span class="badge st ${cls}${s === "cancelled" ? " strike" : ""}" style="--st:var(${v})"><span class="dot"></span>${t}</span>`; }
+function RiskBadge(level){ if (!level) return ""; const map = { high:["Высокий риск","--st-overdue"], medium:["Требует внимания","--st-soon"], low:["В графике","--st-accepted"] }; const [t, v] = map[level]; return `<span class="badge st" style="--st:var(${v})"><span class="dot"></span>${t}</span>`; }
+function CTag(compId, cls=""){ const c = compById(compId); return `<span class="ctag ${cls}"><span class="cdot" style="background:${c.color}"></span>${c.name}</span>`; }
+function DL(t){ if (t.dl.kind === "overdue") return `<span class="dl over">Просрочено · ${t.dl.days} ${plural(t.dl.days,["день","дня","дней"])}</span>`; if (t.dl.kind === "soon") return `<span class="dl soon">Скоро срок · ${t.dl.days} ${plural(t.dl.days,["день","дня","дней"])}</span>`; return `<span class="dl norm">до ${fmtDate(t.deadline)}</span>`; }
+function Progress(done, total, percent, compact=false){ return `<div class="prog${compact ? " cmp" : ""}"><div class="row tab" style="align-items:baseline;gap:8px"><span class="n">${done}</span><span class="t-sm c-sec">из ${total}</span><span class="t-sm c-muted">· <span data-count="${percent}">${percent}</span>%</span></div><div class="bar" role="meter" aria-valuenow="${percent}" aria-label="Прогресс плана"><i style="transform:scaleX(${percent/100})"></i></div></div>`; }
+function Meter(value, color="var(--accent)", cls=""){ return `<div class="meter ${cls}"><i style="background:${color};transform:scaleX(${Math.min(1, value)})"></i></div>`; }
+function PageTitle(title, sub, actions=""){ return `<div class="ptitle"><div><h1>${title}</h1>${sub ? `<p class="sub">${sub}</p>` : ""}</div>${actions ? `<div class="row shrink0" style="gap:8px">${actions}</div>` : ""}</div>`; }
+function Back(route, text){ return `<a class="back" href="#${route}">${ic("arrow-left")}${text}</a>`; }
+function StatTile(label, value, hint, suffix="", tone="default"){
+  const color = tone === "overdue" && value > 0 ? "var(--st-overdue)" : tone === "soon" && value > 0 ? "var(--st-soon)" : "var(--text)";
+  return `<div class="card p56 tile"><p class="eyebrow">${label}</p><p class="num" style="color:${color}"><span data-count="${value}">0</span>${suffix}</p><p class="h">${hint}</p></div>`;
+}
+function Select(id, options, value, onchange, width=""){ return `<label class="sel" style="${width ? `width:${width}` : ""}"><select id="${id}" onchange="${onchange}" aria-label="${esc(options[0][1])}">${options.map(([v, t]) => `<option value="${v}"${v === value ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>${ic("chevron-down")}</label>`; }
+function Search(id, placeholder, value, oninput, width=""){ return `<div class="inp-wrap" style="${width ? `width:${width};max-width:100%` : ""}"><span class="lead">${ic("search")}</span><input id="${id}" class="inp has-lead" placeholder="${placeholder}" aria-label="${placeholder}" value="${esc(value ?? "")}" oninput="${oninput}"></div>`; }
+function Empty(title, hint="", action=""){ return `<div class="empty fade-up"><svg width="56" height="36" viewBox="0 0 56 36" fill="none" aria-hidden="true" style="color:var(--border-strong)"><polygon points="28.0,3.0 41.0,10.5 41.0,25.5 28.0,33.0 15.0,25.5 15.0,10.5" stroke="currentColor" stroke-width="1"/><polygon points="28.0,10.0 34.9,14.0 34.9,22.0 28.0,26.0 21.1,22.0 21.1,14.0" stroke="currentColor" stroke-width=".8"/><path d="M28 18L28.0,3.0 M28 18L41.0,10.5 M28 18L41.0,25.5 M28 18L28.0,33.0 M28 18L15.0,25.5 M28 18L15.0,10.5" stroke="currentColor" stroke-width=".6"/><polygon points="28.0,5.2 35.1,13.9 37.7,23.6 28.0,24.8 16.3,24.8 20.2,13.5" fill="var(--accent)" fill-opacity=".18" stroke="var(--accent)" stroke-width="1.2" stroke-linejoin="round"/></svg><p class="serif t-xl c-text mt6" style="font-size:24px">${title}</p>${hint ? `<p class="mt2 c-sec" style="max-width:36ch">${hint}</p>` : ""}${action ? `<div class="mt6">${action}</div>` : ""}</div>`; }
+function ShowMore(key, total, shown, page, forms){
+  if (total <= page) return "";
+  const rest = total - shown;
+  return `<div class="row wrap mt4" style="gap:4px 16px">${rest > 0 ? `<button class="btn btn-secondary btn-sm" style="height:44px" onclick="more('${key}',${page})">${ic("chevron-down")}Ещё ${Math.min(page, rest)}</button>` : ""}${shown > page ? `<button class="btn btn-text btn-sm" onclick="collapse('${key}')">Свернуть</button>` : ""}<span class="t-xs c-muted tab">Показано ${shown} из ${total} ${plural(total, forms)}</span></div>`;
+}
+function more(key, page){ S.more[key] = (S.more[key] ?? page) + page; rerender(); }
+function collapse(key){ delete S.more[key]; rerender(); }
+function Pager(key, page, pages){
+  if (pages <= 1) return "";
+  const keep = new Set([1, pages, page - 1, page, page + 1]);
+  if (page <= 3) [2,3,4].forEach(n => keep.add(n));
+  if (page >= pages - 2) [pages-1, pages-2, pages-3].forEach(n => keep.add(n));
+  const list = [...keep].filter(n => n >= 1 && n <= pages).sort((a, b) => a - b);
+  let items = "";
+  list.forEach((n, i) => { if (i > 0 && n - list[i-1] > 1) items += `<li class="t-sm c-muted" style="padding:0 4px">…</li>`; items += `<li><button onclick="setPage('${key}',${n})" class="tab" style="display:flex;height:36px;min-width:36px;align-items:center;justify-content:center;border-radius:4px;padding:0 8px;font-size:13px;${n === page ? "background:var(--inverse);color:var(--on-inverse)" : "color:var(--text-body)"}">${n}</button></li>`; });
+  return `<nav class="row between mt4" style="gap:12px" aria-label="Страницы"><button class="btn btn-secondary btn-sm" ${page <= 1 ? "disabled" : ""} onclick="setPage('${key}',${page-1})">${ic("chevron-left")}Назад</button><ul class="row only-md" style="gap:4px">${items}</ul><button class="btn btn-secondary btn-sm" ${page >= pages ? "disabled" : ""} onclick="setPage('${key}',${page+1})">Дальше${ic("chevron-right")}</button></nav>`;
+}
+function setPage(key, p){ S.page[key] = p; rerender(); window.scrollTo({top:0}); }
+function toast(text){ document.querySelector(".toast")?.remove(); const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role","status"); t.innerHTML = `${ic("circle-check")}${text}`; document.body.appendChild(t); lucide.createIcons({nodes:[t]}); setTimeout(() => t.remove(), 2600); }
+function dialog(title, desc, confirmLabel, variant, onOk, body=""){
+  closeOverlays();
+  const el = document.createElement("div"); el.className = "scrim"; el.id = "overlay";
+  el.innerHTML = `<div class="dlg" role="dialog" aria-modal="true"><h2>${title}</h2>${desc ? `<p class="mt2 c-sec">${desc}</p>` : ""}${body ? `<div class="mt5">${body}</div>` : ""}<div class="row end wrap mt6" style="gap:12px"><button class="btn btn-secondary" data-x>Отмена</button>${confirmLabel ? `<button class="btn btn-${variant}" data-ok>${confirmLabel}</button>` : ""}</div></div>`;
+  el.addEventListener("click", e => { if (e.target === el || e.target.closest("[data-x]")) el.remove(); if (e.target.closest("[data-ok]")) { el.remove(); onOk && onOk(); } });
+  document.body.appendChild(el); lucide.createIcons({nodes:[el]});
+}
+function closeOverlays(){ document.getElementById("overlay")?.remove(); closeMenu(); }
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeOverlays(); });
+
+/* ===================== Навигация ===================== */
+const NAV = {
+  a: [["dashboard","Дашборд","gauge"],["analytics","Аналитика","chart-no-axes-combined"],["review","Проверка","clipboard-check"],["deadlines","Переносы сроков","calendar-clock"],["managers","Руководители","users"],["curators","Кураторы","user-search"],["assessments","Оценки","book-open"],["library","Библиотека задач","library-big"],["companies","Компании","building-2"],["settings","Компетенции","settings-2"],["audit","Журнал","history"]],
+  c: [["wards","Подопечные","users"],["review","Очередь проверки","clipboard-check"],["notifications","Уведомления","bell"]],
+  m: [["plan","Мой план","list-checks"],["reports","Мои отчёты","file-check-2"],["notifications","Уведомления","bell"],["profile","Мой профиль","circle-user"]],
+};
+const ALSO = { a:{ manager:"managers", plan:"managers", curator:"curators", hrp:"hr" }, c:{ ward:"wards" }, m:{ task:"plan" } };
+function activeOf(page){ return ALSO[S.user.area]?.[page] ?? page; }
+function navItems(){
+  const area = S.user.area;
+  if (area === "a" && S.role === "sa") { const n = NAV.a.slice(0, -1); n.push(["hr","HR-отдел","shield-check"], NAV.a[NAV.a.length-1]); return n; }
+  return NAV[area];
+}
+function unread(role){ if (S.readAll[role]) return 0; if (role === "cur") return 64; return (NOTIF[role] ?? []).filter(n => !n.read).length; }
+function badges(){
+  if (S.user.area === "a") return { deadlines: DEADLINE_PENDING.length };
+  if (S.user.area === "c") return { review: queueFor(1).length, notifications: unread("cur") };
+  return { notifications: unread("mgr") };
+}
+
+function route(){ const h = (location.hash || "#login").slice(1); const [area, page, id, tab] = h.split("."); return { area, page: page || "", id, tab }; }
+function go(r){ if (location.hash.slice(1) === r) render(); else location.hash = r; }
+function rerender(){ const y = window.scrollY; render(true); window.scrollTo(0, y); }
+window.addEventListener("hashchange", () => { S.more = {}; render(); window.scrollTo(0, 0); });
+
+function setRole(role){
+  if (role === "login") { S.role = null; go("login"); return; }
+  S.role = role; S.user = USERS[role];
+  go(role === "cur" ? "c.wards" : role === "mgr" ? "m.plan" : "a.dashboard");
+}
+
+/* ===================== Оболочка кабинета ===================== */
+function Shell(content, r){
+  const items = navItems(), b = badges(), active = activeOf(r.page), area = S.user.area, my = area === "m";
+  const bell = area === "m" ? unread("mgr") : area === "c" ? unread("cur") : 0;
+  const side = items.map(([p, label, icon]) => `<a class="nav${p === active ? " on" : ""}" href="#${area}.${p}"${p === active ? ' aria-current="page"' : ""}>${ic(icon)}<span class="lbl">${label}</span>${b[p] ? `<span class="nb">${b[p]}</span>` : ""}</a>`).join("");
+  const bottom = my ? `<nav class="bottom glass" aria-label="Разделы">${[["plan","План","list-checks"],["reports","Отчёты","file-check-2"],["notifications","Уведомления","bell"],["profile","Профиль","circle-user"]].map(([p, l, i]) => `<a href="#m.${p}" class="${p === active ? "on" : ""}">${ic(i)}${l}${p === "notifications" && bell ? `<span class="cnt">${bell}</span>` : ""}</a>`).join("")}</nav>` : "";
+  return `<a href="#content" class="sr" style="position:absolute;left:-9999px">К содержимому</a>
+  <header class="hdr glass"><div class="hdr-in">
+    <div class="row" style="gap:4px;min-width:0">
+      <button class="round-btn burger" aria-label="Разделы" onclick="openNavMenu(this)">${ic("menu")}</button>
+      <a class="hdr-home" href="#${area}.${items[0][0]}" aria-label="На главную кабинета"><span class="logo"><span class="logo-mark" style="height:30px;width:97px" role="img" aria-label="Авесто Групп"></span><span class="logo-sep"></span><span class="logo-sub">Развитие руководителей</span></span></a>
+    </div>
+    <div class="row shrink0" style="gap:4px">
+      <button class="round-btn" aria-label="Уведомления" onclick="openBell(this)">${ic("bell")}${bell ? `<span class="cnt">${bell > 99 ? "99+" : bell}</span>` : ""}</button>
+      <button class="round-btn user-btn" aria-label="Меню пользователя" onclick="openUserMenu(this)">${Avatar(S.user.name, "sm")}</button>
+    </div>
+  </div></header>
+  <div class="body">
+    <nav class="side" aria-label="Разделы">${side}</nav>
+    <main id="content" class="main${my ? " my" : ""}"><div class="inner page">${content}</div></main>
+  </div>${bottom}`;
+}
+
+/* Меню */
+function closeMenu(){ document.querySelectorAll(".pop").forEach(p => p.remove()); document.querySelectorAll(".user-btn.open").forEach(b => b.classList.remove("open")); }
+function popAt(btn, html, width, align="end"){
+  closeMenu();
+  const r = btn.getBoundingClientRect(), el = document.createElement("div");
+  el.className = "pop"; el.style.width = Math.min(width, innerWidth - 24) + "px"; el.style.top = (r.bottom + 8) + "px";
+  const left = align === "end" ? r.right - Math.min(width, innerWidth - 24) : r.left;
+  el.style.left = Math.max(12, left) + "px"; el.innerHTML = html;
+  document.body.appendChild(el); lucide.createIcons({nodes:[el]});
+  setTimeout(() => document.addEventListener("click", function h(e){ if (!el.contains(e.target)) { closeMenu(); document.removeEventListener("click", h); } }), 0);
+  return el;
+}
+function openUserMenu(btn){
+  btn.classList.add("open");
+  popAt(btn, `<div style="padding:8px 12px 12px"><p class="serif t-lg c-text" style="line-height:1.25">${S.user.name}</p><p class="mt1 t-sm c-muted trunc">${S.user.email}</p><span class="badge b-accent mt2" style="background:var(--accent-soft)">${S.user.title}</span></div><div class="sep"></div>
+  <button class="mi" onclick="closeMenu();toast('Личные данные открываются в боковой панели')">${ic("user-round")}Личные данные</button>
+  <button class="mi" onclick="closeMenu();S.backTo=location.hash.slice(1);go('pw')">${ic("key-round")}Сменить пароль</button>
+  <button class="mi" onclick="closeMenu();dialog('Выйти на всех устройствах?','Все открытые сеансы — на этом компьютере, телефоне и других устройствах — будут закрыты. Чтобы продолжить работу, нужно будет войти заново.','Выйти везде','primary',()=>setRole('login'))">${ic("monitor-smartphone")}Выйти на всех устройствах</button>
+  <div class="sep"></div><button class="mi" onclick="closeMenu();setRole('login')">${ic("log-out")}Выйти</button>`, 288);
+}
+function changePassword(){ dialog("Сменить пароль", "", "Сохранить", "primary", () => toast("Пароль изменён"), `<div class="col" style="gap:20px"><div class="field"><label class="label">Текущий пароль</label><input class="inp" type="password"></div><div class="field"><label class="label">Новый пароль</label><input class="inp" type="password"><p class="hint">Не короче 10 символов</p></div></div>`); }
+function openNavMenu(btn){ const area = S.user.area, active = activeOf(route().page); popAt(btn, navItems().map(([p, l, i]) => `<a class="mi${p === active ? " on" : ""}" href="#${area}.${p}" onclick="closeMenu()">${ic(i)}${l}</a>`).join(""), 256, "start"); }
+function NotifBody(n, size="sm"){
+  const k = KINDS[n.kind];
+  return `<span class="row grow" style="align-items:flex-start;gap:12px"><span class="row shrink0" style="justify-content:center;margin-top:2px;width:${size === "md" ? 36 : 32}px;height:${size === "md" ? 36 : 32}px;border-radius:50%;color:${k.color};background:color-mix(in srgb,${k.color} 12%,transparent)">${ic(k.icon)}</span><span class="grow"><span class="row wrap between" style="align-items:baseline;gap:0 12px"><span class="fw7 ${size === "md" ? "t-base" : "t-sm"}" style="color:${k.color}">${k.label}</span><span class="t-xs c-muted tab">${fmtDT(n.at)}</span></span><span class="mt1" style="display:block;line-height:1.45;font-size:${size === "md" ? 15 : 13}px;color:${n.read || S.readAll[S.role] ? "var(--text-secondary)" : "var(--text)"}">${esc(n.text)}</span></span></span>`;
+}
+function openBell(btn){
+  const list = NOTIF[S.role] ?? [], u = unread(S.role), all = S.user.area === "m" ? "m.notifications" : S.user.area === "c" ? "c.notifications" : "a.review";
+  popAt(btn, `<div class="row between" style="padding:8px 12px"><p class="serif t-lg c-text">Уведомления</p>${u ? `<button class="btn btn-text btn-sm" onclick="readAll()">Прочитать все</button>` : ""}</div>${list.length ? `<ul class="col" style="gap:4px;max-height:420px;overflow-y:auto">${list.slice(0, 30).map(n => `<li><a href="#${all}" onclick="closeMenu()" class="row" style="position:relative;align-items:flex-start;border-radius:8px;padding:12px 28px 12px 12px;${!n.read && !S.readAll[S.role] ? "background:rgba(245,244,242,.7)" : ""}">${NotifBody(n)}${!n.read && !S.readAll[S.role] ? '<span style="position:absolute;right:10px;top:18px;width:8px;height:8px;border-radius:50%;background:var(--accent)"></span>' : ""}</a></li>`).join("")}</ul>` : `<p class="t-sm c-muted" style="padding:24px 12px;text-align:center">Пока ничего нет</p>`}<div style="border-top:1px solid var(--border);padding:8px 12px 0"><a href="#${all}" onclick="closeMenu()" class="t-sm c-accent" style="display:block;padding:8px 0">Все уведомления</a></div>`, 400);
+}
+function readAll(){ S.readAll[S.role] = true; closeMenu(); toast("Все прочитаны"); rerender(); }
+
+/* ===================== Вход ===================== */
+function roseLoginSVG(){
+  const CX = 520, CY = 330, AX = 8, RINGS = [60,120,180,240,300];
+  const pt = (r, i) => { const a = -Math.PI/2 + i*2*Math.PI/AX; return [CX + r*Math.cos(a), CY + r*Math.sin(a)]; };
+  const poly = radii => radii.map((r, i) => pt(r, i).map(v => v.toFixed(1)).join(" ")).join(" L ");
+  const FIRST = [150,210,120,180,90,200,135,165], LAST = [230,260,190,250,170,265,210,240];
+  let s = "";
+  RINGS.forEach((r, i) => s += `<path pathLength="1" class="draw" style="--delay:${0.3 + i*0.35}s;--d:1.8s" d="M ${poly(Array(AX).fill(r))} Z" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>`);
+  for (let i = 0; i < AX; i++) { const [x, y] = pt(300, i); s += `<path pathLength="1" class="draw" style="--delay:${0.6 + i*0.08}s;--d:1.4s" d="M ${CX} ${CY} L ${x.toFixed(1)} ${y.toFixed(1)}" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>`; }
+  s += `<path class="fadein" style="--delay:2.2s;--d:1.8s" d="M ${poly(FIRST)} Z" stroke="rgba(255,255,255,0.35)" stroke-width="1.4" stroke-dasharray="5 6" stroke-linejoin="round"/>`;
+  s += `<path pathLength="1" class="draw" style="--delay:2.8s;--d:2s" d="M ${poly(LAST)} Z" stroke="rgba(71,161,99,0.7)" stroke-width="1.8" stroke-linejoin="round" fill="rgba(71,161,99,0.06)"/>`;
+  LAST.forEach((r, i) => { const [x, y] = pt(r, i); s += `<circle class="fadein" style="--delay:${4.2 + i*0.08}s;--d:.6s" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="#47A163"/>`; });
+  return `<svg viewBox="0 0 900 660" fill="none" aria-hidden="true" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%">${s}</svg>`;
+}
+function LoginPage(){
+  return `<main class="login">
+    <section class="login-dark" aria-hidden="true">
+      ${roseLoginSVG()}
+      <div style="pointer-events:none;position:absolute;inset:0;background:radial-gradient(ellipse at 20% 85%,#131313 20%,transparent 70%)"></div>
+      <div style="position:relative;padding:48px 56px 0"><span class="logo-mark" style="height:34px;width:110px"></span></div>
+      <div style="position:relative;padding:0 56px 64px"><p class="phrase">Мы делаем инновации нашей традицией</p><p style="margin-top:32px;font-size:13px;letter-spacing:.06em;color:rgba(255,255,255,.55);text-transform:uppercase">Развитие руководителей · ИПР</p></div>
+    </section>
+    <section class="login-light">
+      <span class="logo-mark mob-logo" style="height:28px;width:91px"></span>
+      <div style="margin:0 auto;display:flex;width:100%;max-width:380px;flex:1;flex-direction:column;justify-content:center;padding:48px 0">
+        <h1 class="fade-up" style="font-size:40px;line-height:1.25">Вход</h1>
+        <p class="fade-up mt2 c-sec" style="animation-delay:.06s">Индивидуальные планы развития руководителей</p>
+        <form id="loginForm" novalidate class="col" style="margin-top:40px;gap:24px">
+          <div class="field fade-up" style="animation-delay:.12s"><label class="label" for="lemail">Email</label><input id="lemail" class="inp" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" autofocus><p class="err" id="eemail" hidden></p></div>
+          <div class="field fade-up" style="animation-delay:.18s"><label class="label" for="lpass">Пароль</label><div class="inp-wrap"><input id="lpass" class="inp has-trail" type="password" autocomplete="current-password"><span class="trail"><button type="button" id="eye" aria-label="Показать пароль" class="row" style="justify-content:center;width:36px;height:36px;border-radius:50%;color:var(--text-muted)">${ic("eye")}</button></span></div><p class="err" id="epass" hidden></p></div>
+          <div class="fade-up" style="padding-top:8px;animation-delay:.24s"><button type="submit" class="btn btn-primary btn-lg" style="width:100%">Войти</button></div>
+        </form>
+        <p class="fade-up t-sm c-muted" style="margin-top:32px;animation-delay:.3s">Нет доступа или забыли пароль — обратитесь к HR-директору холдинга.</p>
+      </div>
+      <p class="t-xs c-muted" style="text-align:center">© ООО «Авесто Групп» · только для сотрудников</p>
+    </section>
+  </main>`;
+}
+function bindLogin(){
+  const f = document.getElementById("loginForm"); if (!f) return;
+  if (innerWidth >= 640) document.getElementById("lemail").focus();
+  document.getElementById("eye").onclick = () => { const p = document.getElementById("lpass"), b = document.getElementById("eye"); const show = p.type === "password"; p.type = show ? "text" : "password"; b.setAttribute("aria-label", show ? "Скрыть пароль" : "Показать пароль"); b.innerHTML = ic(show ? "eye-off" : "eye"); lucide.createIcons({nodes:[b]}); };
+  f.onsubmit = e => {
+    e.preventDefault();
+    const em = document.getElementById("lemail"), pw = document.getElementById("lpass"), ee = document.getElementById("eemail"), ep = document.getElementById("epass");
+    const okE = /^\S+@\S+\.\S+$/.test(em.value.trim()), okP = pw.value.length > 0;
+    ee.hidden = okE; ee.textContent = em.value.trim() ? "Проверьте email" : "Введите email"; em.setAttribute("aria-invalid", !okE);
+    ep.hidden = okP; ep.textContent = "Введите пароль"; pw.setAttribute("aria-invalid", !okP);
+    if (!okE || !okP) return;
+    const v = em.value.toLowerCase();
+    setRole(v.includes("curator") ? "cur" : (v.includes("long") || v.includes("manager")) ? "mgr" : v.includes("super") ? "sa" : "hr");
+  };
+}
+
+/* ===================== HR: Дашборд и таблица руководителей ===================== */
+function ManagersTable(rows, showCurator, prefix, subject){
+  const L = subject === "ward" ? { title:"Подопечные", col:"Подопечный" } : { title:"Руководители", col:"Руководитель" };
+  const key = "dash-" + subject;
+  const q = (S.q[key] ?? "").trim().toLocaleLowerCase("ru"), co = S.sel[key + "-co"] ?? "", sort = S.sel[key + "-sort"] ?? "name";
+  let list = rows.filter(r => (!co || r.company === co) && (!q || [r.name, r.position, coName(r.company)].join(" ").toLocaleLowerCase("ru").split(/\s+/).some(w => w.startsWith(q))));
+  const sorters = { name:(a,b) => collator.compare(a.name,b.name), risk:(a,b) => (b.risk ? 1 : 0) - (a.risk ? 1 : 0) || collator.compare(a.name,b.name), progress:(a,b) => b.percent - a.percent, overdue:(a,b) => b.overdue - a.overdue, review:(a,b) => b.review - a.review, login:(a,b) => b.login.localeCompare(a.login) };
+  list = list.slice().sort(sorters[sort]);
+  const shown = S.more[key] ?? 5, vis = list.slice(0, shown);
+  const cos = [["", "Все компании"], ...COMPANIES.map(c => [c.id, c.name])];
+  const sorts = [["name","По имени"],["risk","По риску"],["progress","По выполнению"],["overdue","По просрочкам"],["review","По проверке"],["login","По входу"]];
+  const draft = r => r.draft ? (showCurator ? `<a href="#a.plan.${r.id}" class="t-sm c-accent" style="text-underline-offset:4px">Черновик — запустить</a>` : `<span class="t-sm c-muted">Нет запущенного плана</span>`) : Progress(r.done, r.total, r.percent, true);
+  const rowsHtml = vis.map((r, i) => `<tr class="fade-up" style="animation-delay:${Math.min(i,8)*0.04}s">
+      <td><a class="row lnk" href="#${prefix}.${r.id}" style="gap:12px">${Avatar(r.name)}<span style="min-width:0"><span class="fw5" style="display:block">${r.name}</span><span class="t-sm c-sec" style="display:block">${r.position}</span></span></a></td>
+      <td class="c-body">${coName(r.company)}</td>
+      ${showCurator ? `<td class="c-body">${curById(r.curator).name}</td>` : ""}
+      <td>${draft(r)}</td>
+      <td>${RiskBadge(r.risk)}</td>
+      <td class="tab" style="color:${r.overdue > 0 ? "var(--st-overdue)" : "var(--text-body)"}">${r.overdue}</td>
+      <td class="tab c-body">${r.review}</td>
+      <td class="tab c-body">${fmtDate(r.login)}</td></tr>`).join("");
+  const cards = vis.map(r => `<li><a href="#${prefix}.${r.id}" class="card inter p4" style="display:block"><div class="row" style="align-items:flex-start;gap:12px">${Avatar(r.name, "md")}<div class="grow"><p class="fw5 c-text">${r.name}</p><p class="t-sm c-sec">${[coName(r.company), showCurator ? "куратор " + curById(r.curator).name : ""].filter(Boolean).join(" · ")}</p></div></div><div class="mt3">${r.draft ? `<span class="t-sm c-sec">Черновик — не запущен</span>` : Progress(r.done, r.total, r.percent, true)}</div><p class="mt2 t-sm c-sec tab"><span style="color:${r.overdue ? "var(--st-overdue)" : ""}">Просрочено ${r.overdue}</span> · На проверке ${r.review}</p>${r.risk ? `<div class="mt3">${RiskBadge(r.risk)}</div>` : ""}</a></li>`).join("");
+  const cols = showCurator ? `<col><col style="width:200px"><col style="width:110px"><col style="width:170px"><col style="width:148px"><col style="width:128px"><col style="width:104px"><col style="width:124px">` : `<col><col style="width:240px"><col style="width:176px"><col style="width:148px"><col style="width:128px"><col style="width:104px"><col style="width:124px">`;
+  return `<div class="row wrap between mt8" style="gap:12px">
+      <h2 style="font-size:24px">${L.title}<span class="pill-count tab">${rows.length} ${plural(rows.length,["человек","человека","человек"])}</span></h2>
+      <div class="row wrap" style="gap:8px">${Search(key + "-q", "Поиск по имени", S.q[key], `S.q['${key}']=this.value;rerenderKeep('${key}-q')`, "224px")}${Select(key + "-co", cos, co, `S.sel['${key}-co']=this.value;delete S.more['${key}'];rerender()`, "208px")}${Select(key + "-sort", sorts, sort, `S.sel['${key}-sort']=this.value;delete S.more['${key}'];rerender()`, "192px")}</div>
+    </div>
+    ${list.length === 0 ? `<div class="card mt4">${Empty("Никого не нашли", "Попробуйте другие первые буквы.", `<button class="btn btn-secondary" onclick="S.q['${key}']='';S.sel['${key}-co']='';rerender()">Сбросить фильтры</button>`)}</div>` : `
+    <div class="card p0 mt4 only-lg scroll-x"><table class="tbl hov" style="min-width:${showCurator ? 1000 : 900}px"><colgroup>${cols}</colgroup><thead><tr><th>${L.col}</th><th>Компания</th>${showCurator ? "<th>Куратор</th>" : ""}<th>Выполнение</th><th>Риск</th><th>Просрочено</th><th>На проверке</th><th>Последний вход</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
+    <ul class="col mt4 no-lg" style="gap:12px">${cards}</ul>
+    ${ShowMore(key, list.length, vis.length, 5, ["человека","человек","человек"])}`}`;
+}
+function rerenderKeep(id){ const el = document.getElementById(id), pos = el?.selectionStart; rerender(); const n = document.getElementById(id); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch(e){} } }
+
+function DashboardView(title, sub, rows, totals, showCurator, prefix, subject){
+  return PageTitle(title, sub) + `<div class="tiles mt8">
+    ${StatTile("Выполнение", totals.completion, `Принято задач по запущенным планам · ${totals.managers} ${subject === "ward" ? "чел." : "рук."}${totals.withoutPlan ? `, без плана ${totals.withoutPlan}` : ""}`, "%")}
+    ${StatTile("На проверке", totals.review, "Ждут решения кураторов")}
+    ${StatTile("Просрочено", totals.overdue, "Задач с истёкшим сроком", "", "overdue")}
+    ${StatTile("Скоро срок", totals.soon, "Дедлайн в ближайшие дни", "", "soon")}
+    ${StatTile("Проверка задерживается", totals.delayed, "Дольше нормы у куратора", "", "soon")}
+    ${StatTile("Высокий риск", totals.risk, "Планы под угрозой срыва", "", "overdue")}
+  </div>` + ManagersTable(rows, showCurator, prefix, subject);
+}
+function totalsOf(rows){
+  const launched = rows.filter(r => !r.draft), done = launched.reduce((s, r) => s + r.done, 0), total = launched.reduce((s, r) => s + r.total, 0);
+  return { completion: Math.round(done / total * 100), managers: rows.length, withoutPlan: rows.length - launched.length, review: rows.reduce((s, r) => s + r.review, 0), overdue: rows.reduce((s, r) => s + r.overdue, 0), soon: 3, delayed: rows.reduce((s, r) => s + (r.id === "abd" ? 0 : r.review), 0), risk: rows.filter(r => r.risk === "high").length };
+}
+function AdminDashboard(){ return DashboardView("Дашборд", "Картина по холдингу: выполнение планов, проверка, просрочки.", MANAGERS, totalsOf(MANAGERS), true, "a.manager", "manager"); }
+function CuratorWards(){ const rows = MANAGERS.filter(m => m.curator === "c1"); return DashboardView("Подопечные", "Прогресс, просрочки и задачи, ожидающие вашей проверки.", rows, totalsOf(rows), false, "c.ward", "ward"); }
+
+/* ===================== Аналитика ===================== */
+function cellStyle(avg, thr=3, max=5){
+  const below = avg < thr, span = below ? thr : max - thr, dist = span > 0 ? Math.min(1, Math.abs(avg - thr) / span) : 0, strength = Math.round(30 + dist * 70);
+  return `background:color-mix(in srgb,${below ? "var(--st-overdue)" : "var(--accent)"} ${strength}%,var(--surface));color:${below && strength >= 90 ? "#fff" : "var(--text)"}`;
+}
+function HeatCell(v, large=false){ return `<span class="hc" title="${fmtScore(v)} из 5" style="${cellStyle(v)};${large ? "font-weight:500;" : ""}${v < 3 ? "font-weight:600" : ""}">${fmtScore(v)}</span>`; }
+function Analytics(){
+  const key = "heat", shown = S.more[key] ?? 5, rows = COMPANIES.slice(0, shown);
+  const sl = "padding:16px 8px 4px;text-align:left;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-secondary)";
+  const heat = `<div class="card p56"><div class="row wrap between" style="align-items:baseline;gap:8px"><p class="eyebrow">Средний балл по компетенциям</p><p class="t-xs c-muted tab">Шкала до 5 · граница зоны роста 3</p></div>
+    <div class="mt4 scroll-x"><table class="heat"><thead><tr><th style="width:192px"></th>${COMPS.map(c => `<th style="padding:8px 6px;vertical-align:top;font-size:12px;font-weight:500;color:var(--text-secondary)"><span class="col" style="align-items:center;gap:6px;text-align:center;line-height:1.35"><span class="cdot" style="background:${c.color}"></span>${c.name}</span></th>`).join("")}</tr></thead>
+    <tbody><tr><th colspan="9" style="${sl};padding-top:4px">Холдинг в целом</th></tr><tr><th style="padding:8px;text-align:left"><span class="fw6 c-text" style="display:block">Все компании</span><span class="t-xs c-muted tab" style="display:block;font-weight:400">оценено 201 из 201</span></th>${HEAT_TOTAL.map(v => `<td style="padding:0">${HeatCell(v, true)}</td>`).join("")}</tr></tbody>
+    <tbody><tr><th colspan="9" style="${sl};padding-top:40px">По компаниям</th></tr>${rows.map(co => `<tr><th style="padding:8px;text-align:left;font-weight:500" class="c-text">${co.name}<span class="t-xs c-muted tab" style="display:block;font-weight:400">оценено ${co.managers} из ${co.managers}</span></th>${heatRow(co).map(v => `<td style="padding:0">${HeatCell(v)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    ${ShowMore(key, COMPANIES.length, rows.length, 5, ["компании","компаний","компаний"]).replace('class="row wrap mt4"', 'class="row wrap mt3"')}
+    <div class="row wrap mt4 t-xs c-sec" style="gap:8px 20px"><span class="row" style="gap:8px"><span style="width:12px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--st-overdue) 75%,var(--surface))"></span>ниже границы (число жирнее)</span><span class="row" style="gap:8px"><span style="width:12px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--accent) 75%,var(--surface))"></span>выше границы</span><span>Чем насыщеннее цвет, тем дальше от границы.</span></div></div>`;
+  const gaps = `<div class="card p56"><p class="eyebrow">Системные зоны роста</p><p class="mt1 t-sm c-sec">Где ниже границы сразу у многих — здесь групповое обучение даст больше, чем отдельные задачи в планах.</p><ul class="mt3 divide">${GAPS.map(([k, n, avg]) => `<li class="row wrap between" style="gap:4px 16px;padding:12px 0">${CTag(k, "t-base c-text")}<span class="t-sm c-sec tab"><span class="fw5 c-text">${n} из 201</span> ${plural(201,["руководитель","руководителя","руководителей"])} ниже границы · средний ${fmtScore(avg)}</span></li>`).join("")}</ul></div>`;
+  const ck = "curstat", cshown = S.more[ck] ?? 5;
+  const sorted = CURATORS.slice().sort((a, b) => b.delayed - a.delayed || (b.n === 1 ? 1 : 0) - (a.n === 1 ? 1 : 0) || ([13,15,17,19].includes(b.n) ? 1 : 0) - ([13,15,17,19].includes(a.n) ? 1 : 0) || collator.compare(a.name, b.name));
+  const cur = `<div class="card p56"><div class="row wrap between" style="align-items:baseline;gap:8px"><p class="eyebrow">Проверка по кураторам</p><p class="t-xs c-muted tab">Срок проверки 5 рабочих дней · решения за последние 365 дней</p></div>
+    <div class="mt3 scroll-x"><table class="tbl" style="min-width:940px"><colgroup><col><col style="width:8.5rem"><col style="width:7rem"><col style="width:7rem"><col style="width:5.5rem"><col style="width:7.5rem"><col style="width:13rem"></colgroup><thead><tr><th style="padding-left:0">Куратор</th><th>Подопечных</th><th>Проверено</th><th>В среднем</th><th>В срок</th><th>Возвратов</th><th style="padding-right:0">Ждут сейчас</th></tr></thead><tbody>
+    ${sorted.slice(0, cshown).map(c => { const [w, rv, avg, sla, ret, wait, del] = curStat(c); return `<tr><td style="padding-left:0"><a class="row lnk" href="#a.curator.${c.id}" style="gap:12px">${Avatar(c.name)}<span><span class="fw5" style="display:block">${c.name}</span><span class="t-sm c-sec" style="display:block">${c.position}</span></span></a></td><td class="tab c-body">${w}</td><td class="tab c-body">${rv}</td><td class="tab c-body">${fmtScore(avg)} дн.</td><td class="tab c-body">${sla}%</td><td class="tab c-body">${ret}%</td><td class="tab" style="padding-right:0"><span class="c-body">${wait}</span>${del ? `<span style="color:var(--st-overdue)"> · дольше срока ${del}</span>` : ""}</td></tr>`; }).join("")}
+    </tbody></table></div>${ShowMore(ck, CURATORS.length, Math.min(cshown, CURATORS.length), 5, ["куратора","кураторов","кураторов"])}</div>`;
+  const avg = (a, n) => `<span class="fw5 c-text">${a}</span><span class="c-muted"> из 5 · оценок ${n}</span>`;
+  const q = `<div class="card p56"><div class="row wrap between" style="align-items:baseline;gap:8px"><p class="eyebrow">Качество и полезность задач</p><p class="t-xs c-muted tab">Принятых задач: 5521</p></div>
+    <div class="grid2 half mt4" style="gap:16px"><div style="border-radius:12px;background:var(--surface-muted);padding:16px"><p class="t-sm c-sec">Качество выполнения — оценка кураторов</p><p class="mt1 tab">${avg(4, 5521)}</p></div><div style="border-radius:12px;background:var(--surface-muted);padding:16px"><p class="t-sm c-sec">Полезность задач — оценка руководителей</p><p class="mt1 tab">${avg(3, 2789)}</p></div></div>
+    <ul class="mt4 divide">${[["Практика",1781,1781,908],["Наставничество",1960,1960,1002],["Обучение",1780,1780,879]].map(([t, a, qn, un]) => `<li class="row wrap between t-sm tab" style="gap:4px 16px;padding:12px 0"><span class="t-base c-text">${t} <span class="t-sm c-muted">· принято ${a}</span></span><span class="c-sec">качество ${avg(4, qn)} <span class="c-muted" style="padding:0 4px">/</span> полезность ${avg(3, un)}</span></li>`).join("")}</ul>
+    <div class="mt4"><p class="t-sm fw5 c-sec">Задачи с низкой полезностью — стоит пересмотреть</p><ul class="col mt2" style="gap:8px">${LOW_USEFUL.map(([p, g, u]) => `<li style="border-radius:12px;background:var(--surface-muted);padding:16px"><p class="c-text">Задача 4 плана ${p}</p><p class="mt1 t-sm c-sec tab">Руководитель Ғаниев ${g} · ${u} из 5, ${USEFUL[u].toLocaleLowerCase("ru")}</p></li>`).join("")}</ul></div></div>`;
+  return PageTitle("Аналитика", "Компетенции по компаниям, скорость проверки и качество задач.") + `<div class="col mt8" style="gap:24px">${heat}${gaps}${cur}${q}</div>`;
+}
+
+/* ===================== Проверка / очередь ===================== */
+function ReviewQueue(items, mode){
+  const key = "queue-" + mode, co = S.sel[key + "-co"] ?? "";
+  const list = items.filter(i => !co || mgrById(i.mid).company === co && true);
+  const page = mode === "observer" ? 50 : 50, shown = S.more[key] ?? page, vis = list.slice(0, shown);
+  const cos = [["", "Все компании"], ...COMPANIES.map(c => [c.id, c.name])];
+  return `<div class="row wrap between mt8" style="gap:12px"><p class="t-sm c-muted tab">${list.length} ${plural(list.length,["задача","задачи","задач"])} на проверке · срок проверки 5 рабочих дней</p>${Select(key + "-co", cos, co, `S.sel['${key}-co']=this.value;delete S.more['${key}'];rerender()`, "224px")}</div>
+  ${list.length === 0 ? `<div class="card mt4">${Empty("В этой компании очередь пуста", "В других компаниях задачи могут ждать решения.", `<button class="btn btn-secondary" onclick="S.sel['${key}-co']='';rerender()">Все компании</button>`)}</div>` : `<ul class="col mt4" style="gap:12px">${vis.map((it, i) => { const m = mgrById(it.mid); return `<li class="fade-up" style="animation-delay:${Math.min(i,8)*0.03}s"><div class="card inter p4s5 row wrap" style="gap:12px" onclick="openReview('${it.id}','${mode}')">
+      <div class="row grow" style="align-items:flex-start;gap:12px;min-width:240px">${Avatar(m.name)}<span class="grow"><span class="fw5 c-text" style="display:block">${it.title}</span><span class="row wrap t-sm c-sec" style="margin-top:2px;gap:4px 12px"><span>${m.name} · ${coName(m.company)}</span>${CTag(it.comp)}${it.version > 1 ? `<span class="t-xs c-muted">версия ${it.version}</span>` : ""}</span></span></div>
+      <div class="col shrink0" style="align-items:flex-end;gap:8px"><span class="t-sm tab" style="color:${it.delayed ? "var(--st-soon)" : "var(--text-secondary)"}">ждёт ${it.days} ${plural(it.days,["день","дня","дней"])}</span>
+      ${mode === "observer" ? `${it.delayed ? Badge("Проверка задерживается", "danger", true) : ""}<span class="t-xs c-muted">Куратор: ${curById(it.curator).name}</span><span class="row" style="gap:12px"><button class="btn btn-text btn-sm" onclick="event.stopPropagation();openReview('${it.id}','observer')">Написать куратору</button><a class="btn btn-text btn-sm" href="#a.manager.${m.id}.account" onclick="event.stopPropagation()">Переназначить куратора</a></span>` : ""}</div>
+    </div></li>`; }).join("")}</ul>${ShowMore(key, list.length, vis.length, page, ["задачу","задачи","задач"])}`}`;
+}
+function openReview(id, mode){
+  const it = ALL_QUEUE.find(q => q.id === id) ?? queueFor(1).find(q => q.id === id); const m = mgrById(it.mid);
+  closeOverlays();
+  const el = document.createElement("div"); el.className = "scrim sheet-scrim"; el.id = "overlay";
+  el.innerHTML = `<aside class="sheet" role="dialog" aria-modal="true"><div style="padding:24px 32px 32px">
+    <div class="row between"><p class="eyebrow">Отчёт на проверке</p><button class="round-btn" data-x aria-label="Закрыть">${ic("x")}</button></div>
+    <h2 class="mt2" style="font-size:28px;line-height:1.25">${it.title}</h2>
+    <div class="row wrap mt3" style="gap:8px 12px">${StatusBadge("on_review")}${CTag(it.comp)}<span class="t-xs c-muted">Практика</span>${it.version > 1 ? `<span class="t-xs c-muted">версия ${it.version}</span>` : ""}</div>
+    <div class="row mt5" style="gap:12px">${Avatar(m.name, "md")}<div><p class="fw5 c-text">${m.name}</p><p class="t-sm c-sec">${m.position} · ${coName(m.company)}</p></div></div>
+    <div class="mt6" style="border-radius:12px;background:var(--surface-muted);padding:16px"><p class="t-sm fw5 c-sec">Отчёт руководителя</p><p class="mt2 c-body">Отчёт на проверку. Подзадачи выполнены, результат приложен.</p><p class="mt3 row t-sm c-accent" style="gap:6px">${ic("paperclip","")}<span>Отчёт.pdf</span><span class="c-muted">244 КБ</span></p></div>
+    <p class="mt3 t-sm tab" style="color:${it.delayed ? "var(--st-soon)" : "var(--text-secondary)"}">ждёт ${it.days} ${plural(it.days,["день","дня","дней"])} · срок проверки 5 рабочих дней</p>
+    ${mode === "curator" ? `<div class="field mt6"><label class="label">Комментарий</label><textarea class="inp" rows="3" placeholder="Что получилось, что доработать"></textarea></div>
+    <div class="row wrap mt5" style="gap:8px"><button class="btn btn-primary" data-ok="accept">${ic("check")}Принять</button><button class="btn btn-danger" data-ok="return">${ic("undo-2")}Вернуть на доработку</button></div>`
+    : `<div class="field mt6"><label class="label">Сообщение куратору</label><textarea class="inp" rows="3" placeholder="Напомните о проверке"></textarea></div><div class="row mt5"><button class="btn btn-secondary" data-ok="msg">${ic("send")}Отправить</button></div><p class="mt3 t-sm c-muted">Решение по задаче принимает только куратор руководителя.</p>`}
+  </div></aside>`;
+  el.addEventListener("click", e => { if (e.target === el || e.target.closest("[data-x]")) el.remove(); const ok = e.target.closest("[data-ok]"); if (ok) { el.remove(); toast(ok.dataset.ok === "accept" ? "Задача принята" : ok.dataset.ok === "return" ? "Задача возвращена на доработку" : "Сообщение отправлено куратору"); } });
+  document.body.appendChild(el); lucide.createIcons({nodes:[el]});
+}
+function AdminReview(){ return PageTitle("Проверка", "Что ждёт решения кураторов. Решение принимает только куратор руководителя; задерживающиеся — сверху.") + ReviewQueue(ALL_QUEUE, "observer"); }
+function CuratorReview(){ return PageTitle("Очередь проверки", "Задачи ваших подопечных, ожидающие решения. Старые — сверху.") + ReviewQueue(queueFor(1), "curator"); }
+
+/* ===================== Переносы сроков ===================== */
+const DL_DATES = { 9:["2026-08-23","2026-09-06"], 10:["2026-09-18","2026-10-02"], 11:["2026-10-14","2026-10-28"], 12:["2026-11-09","2026-11-23"], 13:["2026-12-05","2026-12-19"], 14:["2026-12-31","2027-01-14"] };
+function shiftD(iso, days){ const d = new Date(iso + "T00:00:00"); d.setDate(d.getDate() + days); return d; }
+function dlRow([t, p, g, st], i, pre){ const [cur, req] = DL_DATES[t]; return { id:pre + i, mid:"g" + g, title:`Задача ${t} плана ${p}`, cur, req, created:shiftD(cur, -7), status:st, decidedAt:st ? shiftD(cur, -5) : null }; }
+const ABD_REASON = Array(10).fill("Нужно больше времени из-за годового аудита.").join(" ");
+const DEADLINE_PENDING = [[9,123,128],[9,48,28],[9,591,177],[10,9,14]].map((r, i) => dlRow(r, i, "dr"));
+DEADLINE_PENDING.push({ id:"dr-abd", mid:"abd", title:LONG_T, cur:"2026-10-03", req:"2026-11-15", created:new Date(2026,8,30,16,13), reason:ABD_REASON });
+DEADLINE_PENDING.push(dlRow([13,384,110], 9, "dr"));
+const DEADLINE_DONE = [[14,444,19,"r"],[14,405,38,"r"],[14,111,116,"a"],[14,369,139,"a"],[14,579,180,"r"],[14,477,16,"r"],[13,321,101,"r"],[13,288,37,"r"],[13,291,171,"r"],[13,393,170,"r"],[13,294,32,"r"],[13,90,174,"a"],[13,63,80,"a"],[13,426,77,"r"],[13,555,120,"a"],[13,585,147,"r"],[13,324,155,"r"],[13,387,85,"r"],[13,558,176,"r"],[13,450,144,"r"],[12,462,161,"a"],[12,294,32,"a"],[12,399,114,"r"],[12,108,112,"a"],[12,303,192,"r"],[11,354,36,"a"],[11,531,99,"a"],[11,456,105,"r"],[11,363,98,"a"],[11,360,160,"r"]].map(([t, p, g, st], i) => dlRow([t, p, g, st === "a" ? "approved" : "rejected"], i, "dd"));
+function RequestSummary(r){
+  const m = mgrById(r.mid);
+  return `<div class="row grow" style="align-items:flex-start;gap:12px;min-width:0">${Avatar(m.name)}<div style="min-width:0"><p class="fw5 c-text">${r.title}</p><p class="t-sm c-sec" style="margin-top:2px"><a href="#a.manager.${m.id}.plan" class="lnk" style="color:inherit">${m.name}</a> · ${coName(m.company)} · куратор ${curById(m.curator).name}</p>
+  <div class="row wrap mt3" style="gap:4px 12px"><span class="serif t-lg c-text tab">${fmtDate(r.cur)} → ${fmtDate(r.req)}</span>${r.status ? Badge(r.status === "approved" ? "Срок перенесён" : "Отклонён", r.status === "approved" ? "accent" : "danger", true) : ""}</div>
+  <p class="mt1 t-xs c-muted tab">Запрошено ${fmtDT(r.created)} · план до 31-12-2026${r.before ? ` · срок уже переносили ${r.before} ${plural(r.before,["раз","раза","раз"])}` : ""}</p>
+  <p class="mt2 c-body" style="max-width:820px">${r.reason ?? "Нужно больше времени"}</p>${r.status ? `<p class="mt2 t-sm c-sec">Назарова Мадина Рустамовна · ${fmtDT(r.decidedAt)}${r.status === "rejected" ? ": Отказ" : ""}</p>` : ""}</div></div>`;
+}
+function Deadlines(){
+  const pend = DEADLINE_PENDING.filter(r => !S.sel["done-" + r.id]);
+  return PageTitle("Переносы сроков", "Руководитель просит новый срок и объясняет причину. Одобрение меняет срок задачи, отказ — с комментарием.") +
+  `<p class="mt8 t-sm c-muted tab">${pend.length} ${plural(pend.length,["запрос ждёт","запроса ждут","запросов ждут"])} решения</p>` +
+  (pend.length ? `<ul class="col mt4" style="gap:12px">${pend.map(r => `<li><div class="card p56 row wrap between" style="align-items:flex-start;gap:16px">${RequestSummary(r)}<div class="row wrap shrink0" style="gap:8px"><button class="btn btn-secondary" onclick="decide('${r.id}',false)">${ic("x")}Отклонить</button><button class="btn btn-primary" onclick="decide('${r.id}',true)">${ic("check")}Перенести срок</button></div></div></li>`).join("")}</ul>` : `<div class="card mt4">${Empty("Запросов нет", "Когда руководитель попросит перенести срок задачи, запрос появится здесь.")}</div>`) +
+  `<h2 class="mt12" style="font-size:24px">Рассмотренные</h2><ul class="col mt4" style="gap:12px">${DEADLINE_DONE.map(r => `<li><div class="card p56">${RequestSummary(r)}</div></li>`).join("")}</ul>`;
+}
+function decide(id, approve){
+  const r = DEADLINE_PENDING.find(x => x.id === id), m = mgrById(r.mid);
+  dialog(approve ? "Перенести срок?" : "Отклонить запрос?", approve ? `Срок задачи «${r.title}» станет ${fmtDate(r.req)} вместо ${fmtDate(r.cur)}. ${m.name} и куратор получат уведомления.` : `Срок задачи «${r.title}» останется ${fmtDate(r.cur)}. ${m.name} увидит причину отказа.`, approve ? "Перенести срок" : "Отклонить", approve ? "primary" : "danger",
+    () => { S.sel["done-" + id] = true; toast(approve ? "Срок перенесён" : "Запрос отклонён"); rerender(); },
+    approve ? `<div class="field"><label class="label">Комментарий<span class="opt">необязательно</span></label><textarea class="inp" rows="2"></textarea></div>` : `<div class="field"><label class="label">Почему срок не переносится</label><textarea class="inp" rows="3"></textarea></div>`);
+}
+
+/* ===================== Руководители (список) ===================== */
+function ManagersPage(){
+  const key = "mlist", q = (S.q[key] ?? "").trim().toLocaleLowerCase("ru"), co = S.sel[key + "-co"] ?? "", st = S.sel[key + "-st"] ?? "all";
+  const list = MANAGERS.filter(m => (!co || m.company === co) && (st === "all" || st === "active") && (!q || [m.name, m.position, m.email].join(" ").toLocaleLowerCase("ru").includes(q)));
+  return PageTitle("Руководители", "Руководители дочерних компаний: учётные записи, кураторы, статус.") +
+  `<div class="row wrap mt8" style="gap:12px">${Search(key + "-q", "Поиск по ФИО, должности, email", S.q[key], `S.q['${key}']=this.value;rerenderKeep('${key}-q')`, "222px")}${Select(key + "-co", [["", "Все компании"], ...COMPANIES.map(c => [c.id, c.name])], co, `S.sel['${key}-co']=this.value;rerender()`, "224px")}${Select(key + "-st", [["all","Любой статус"],["active","Активна"],["pending","Ждёт первого входа"],["disabled","Заблокирована"]], st, `S.sel['${key}-st']=this.value;rerender()`, "208px")}
+  <div class="row wrap" style="gap:12px;margin-left:auto"><button class="btn btn-secondary" onclick="dialog('Создать планы','Каждому выбранному руководителю будет создан черновик плана.','Создать','primary',()=>toast('Планы созданы черновиками'))">${ic("list-plus")}Создать планы</button><button class="btn btn-primary" onclick="addUser('manager')">${ic("plus")}Добавить руководителя</button></div></div>
+  <p class="mt3 t-sm c-muted tab">${list.length === MANAGERS.length ? `${MANAGERS.length} ${plural(MANAGERS.length,["руководитель","руководителя","руководителей"])}` : `Показано ${list.length} из ${MANAGERS.length}`}</p>
+  ${list.length === 0 ? `<div class="card mt4">${Empty("Никого не нашли", "Измените запрос или снимите фильтры.", `<button class="btn btn-secondary" onclick="S.q['${key}']='';S.sel['${key}-co']='';S.sel['${key}-st']='all';rerender()">Сбросить фильтры</button>`)}</div>` :
+  `<div class="card p0 mt4 scroll-x"><table class="tbl hov" style="min-width:960px"><colgroup><col><col style="width:32%"><col style="width:140px"><col style="width:121px"><col style="width:146px"></colgroup><thead><tr><th>Руководитель</th><th>Компания</th><th>Куратор</th><th>Статус</th><th>Последний вход</th></tr></thead><tbody>${list.map(m => `<tr><td><a class="row lnk" href="#a.manager.${m.id}" style="gap:12px">${Avatar(m.name)}<span style="min-width:0"><span class="fw5" style="display:block">${m.name}</span><span class="t-sm c-sec" style="display:block">${m.position}</span></span></a></td><td class="c-body">${coName(m.company)}</td><td class="c-body">${curById(m.curator).name}</td><td>${Badge("Активна","accent",true)}</td><td class="tab c-body" style="white-space:nowrap">${fmtDate(m.login)}</td></tr>`).join("")}</tbody></table></div>`}`;
+}
+function addUser(kind){
+  const title = kind === "manager" ? "Новый руководитель" : kind === "curator" ? "Новый куратор" : "Новый сотрудник HR";
+  dialog(title, "Будет создан временный пароль — он покажется один раз.", "Создать", "primary", () => toast("Учётная запись создана"),
+    `<div class="col" style="gap:20px"><div class="field"><label class="label">ФИО</label><input class="inp"></div><div class="field"><label class="label">Должность<span class="opt">необязательно</span></label><input class="inp"></div>${kind === "manager" ? `<div class="field"><label class="label">Компания</label>${Select("nu-co", [["", "Выберите компанию"], ...COMPANIES.map(c => [c.id, c.name])], "", "")}</div>` : ""}<div class="field"><label class="label">Email (логин)</label><input class="inp" type="email"></div></div>`);
+}
+
+/* ===================== Профиль оценки (assessment-profile.tsx) ===================== */
+function RoseSVG(values, narrow){
+  const W = narrow ? 420 : 620, H = 360, cx = W/2, cy = H/2, R = 100, N = 8, max = 5;
+  const pt = (r, i) => { const a = -Math.PI/2 + i*2*Math.PI/N; return [cx + r*Math.cos(a), cy + r*Math.sin(a)]; };
+  let g = "";
+  for (let l = 1; l <= max; l++) g += `<polygon points="${Array.from({length:N}, (_, i) => pt(R*l/max, i).map(v => v.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="var(--border)"/>`;
+  for (let i = 0; i < N; i++) { const [x, y] = pt(R, i); g += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--border)"/>`; }
+  const ang = 88 * Math.PI/180;
+  for (let l = 0; l <= max; l++) { const r = R*l/max; g += `<text x="${(cx + r*Math.cos(ang) + 2).toFixed(1)}" y="${(cy - r*Math.sin(ang) + 4).toFixed(1)}" text-anchor="middle" font-size="10" fill="var(--text-muted)" font-family="Onest,system-ui,sans-serif">${l}</text>`; }
+  let labels = "";
+  COMPS.forEach((c, i) => { const [x, y] = pt(R + 10, i); const side = Math.abs(x - cx) < 4 ? 0 : Math.sign(x - cx); const anchor = side === 0 ? "middle" : side > 0 ? "start" : "end"; const yy = y < cy - 4 ? y - 2 : y > cy + 4 ? y + 12 : y + 4; labels += `<text x="${(x + side*6).toFixed(1)}" y="${yy.toFixed(1)}" text-anchor="${anchor}" font-size="12" fill="var(--text-secondary)" font-family="Onest,system-ui,sans-serif">${c.name}</text>`; });
+  const pts = values.map((v, i) => pt(R*v/max, i).map(n => n.toFixed(1)).join(",")).join(" ");
+  const dots = values.map((v, i) => { const [x, y] = pt(R*v/max, i); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="var(--accent)"><title>${COMPS[i].name}: ${fmtScore(v)} из 5</title></circle>`; }).join("");
+  return `<div class="dot-grid" style="border-radius:16px;height:360px;overflow:hidden"><svg class="rose-in" viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Роза компетенций">${g}${labels}<polygon points="${pts}" fill="var(--accent)" fill-opacity=".18" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>${dots}</svg></div>`;
+}
+function ZoneCard(title, hint, items, tone){
+  return `<div class="card p56"><div class="row between" style="align-items:baseline;gap:12px"><p class="eyebrow">${title}</p><span class="t-xs c-muted">${hint}</span></div>${items.length === 0 ? `<p class="mt3 t-sm c-sec">${tone === "growth" ? "Все компетенции на уровне или выше границы." : "Пока нет компетенций выше границы."}</p>` : `<ul class="col mt3" style="gap:10px">${items.map(([k, v]) => `<li class="row between" style="gap:12px">${CTag(k, "t-base c-text")}<span class="row shrink0" style="gap:12px"><span class="only-md" style="height:4px;width:64px;overflow:hidden;border-radius:999px;background:var(--surface-sunken)"><span style="display:block;height:100%;border-radius:999px;width:${v/5*100}%;background:${compById(k).color}"></span></span><span class="t-sm c-sec tab" style="white-space:nowrap">${fmtScore(v)} / 5</span></span></li>`).join("")}</ul>`}</div>`;
+}
+function AssessmentProfile(m, opts){
+  const sc = scoresOf(m), zones = COMPS.map((c, i) => [c.id, sc[i]]);
+  const growth = zones.filter(z => z[1] < 3).sort((a, b) => a[1] - b[1]), strong = zones.filter(z => z[1] >= 3).sort((a, b) => b[1] - a[1]);
+  const avg = Math.round(sc.reduce((s, v) => s + v, 0) / sc.length * 10) / 10;
+  const date = "2025-12-01";
+  const avgHtml = `<p class="t-sm c-sec tab">Средний балл <span class="serif c-text" style="font-size:24px">${fmtScore(avg)}</span> из 5</p>`;
+  const actions = opts.canEdit ? `<span class="row shrink0" style="gap:4px"><button class="btn btn-ghost btn-icon sm" title="Изменить" aria-label="Изменить оценку" onclick="toast('Форма оценки открывается в боковой панели')">${ic("pencil")}</button><button class="btn btn-ghost btn-icon sm text-danger" title="Удалить" aria-label="Удалить оценку" onclick="dialog('Удалить оценку?','Оценка от ${fmtDate(date)}, ${PROVIDER.replace(/«|»/g, "")}, исчезнет из профиля руководителя, розы компетенций и списка оценок. Действие попадёт в журнал.','Удалить','danger',()=>toast('Оценка удалена'))">${ic("trash-2")}</button></span>` : "";
+  return `<div class="col" style="gap:24px">
+    <div class="grid2 rose"><div class="card"><p class="eyebrow">Роза компетенций</p><div class="mt4">${RoseSVG(sc, opts.canSelf)}</div><p class="mt3 t-sm c-sec">Оценка от ${fmtDate(date)}.</p></div>
+    <div class="col" style="gap:24px">${ZoneCard("Зоны роста", "Балл ниже 3", growth, "growth")}${ZoneCard("Сильные зоны", "Балл 3 и выше", strong, "strong")}</div></div>
+    ${SelfCard(m, opts.canSelf)}
+    <div class="card"><div class="row wrap between" style="align-items:baseline;gap:8px"><div><p class="eyebrow">Последняя оценка</p><h2 class="mt1" style="font-size:24px"><button class="row" onclick="openAssessment('${m.id}')" style="margin:0 -8px;min-height:44px;gap:4px;border-radius:8px;padding:0 8px;text-align:left;font:inherit;color:inherit">${PROVIDER} · ${fmtDate(date)}${ic("chevron-right","c-muted")}</button></h2></div>${opts.canEdit ? "" : avgHtml}</div>
+    ${opts.canEdit ? `<div class="row wrap mt3" style="gap:16px">${avgHtml}${actions}</div>` : ""}
+    <div class="mt4 c-body sum2"><p>${SUMMARY}</p></div></div>
+  </div>`;
+}
+function openAssessment(id){
+  const sc = scoresOf(mgrById(id));
+  dialog(`${PROVIDER} · 01-12-2025`, "Оценка целиком: баллы по компетенциям.", "", "", null, `<ul class="divide">${COMPS.map((c, i) => `<li class="row between" style="padding:10px 0">${CTag(c.id, "t-base c-text")}<span class="t-sm tab" style="${sc[i] < 3 ? "color:var(--st-overdue);font-weight:600" : "color:var(--text-secondary)"}">${fmtScore(sc[i])} из 5</span></li>`).join("")}</ul>`);
+  document.querySelector("#overlay [data-x]").textContent = "Закрыть";
+}
+function SelfCard(m, canFill){
+  const self = canFill && S.self;
+  let rows = "";
+  if (self) {
+    const ext = scoresOf(m); let blind = 0, hidden = 0;
+    rows = COMPS.map((c, i) => { const gap = Math.round((self[i] - ext[i]) * 10) / 10, kind = gap >= 1 ? "blind" : gap <= -1 ? "hidden" : "aligned"; if (kind === "blind") blind++; if (kind === "hidden") hidden++;
+      return `<li style="padding:12px 0"><div class="row wrap between" style="gap:4px 16px">${CTag(c.id, "t-base c-text")}<span class="row wrap t-sm tab" style="gap:4px 12px"><span class="c-sec">сам <span class="fw5 c-text">${fmtScore(self[i])}</span> · оценка ${fmtScore(ext[i])}<span class="c-muted"> из 5</span></span><span class="c-sec" style="min-width:48px;text-align:right">${gap === 0 ? "0" : (gap > 0 ? "+" : "−") + fmtScore(Math.abs(gap))}</span>${Badge({blind:"Слепая зона",hidden:"Недооценивает себя",aligned:"Совпадает"}[kind], kind === "blind" ? "danger" : kind === "hidden" ? "accent" : "neutral")}</span></div></li>`; }).join("");
+    rows = `<p class="mt4 c-body">${blind === 0 && hidden === 0 ? "Самооценка близка к внешней оценке по всем компетенциям." : [blind ? `Слепых зон: ${blind} — оценивает себя заметно выше оценщиков` : null, hidden ? `недооценивает себя: ${hidden}` : null].filter(Boolean).join("; ") + "."}</p><ul class="mt3 divide">${rows}</ul><p class="mt3 t-xs c-muted">Сравнение с оценкой от 01-12-2025. Заметное расхождение — от 1 из 5.</p>`;
+  }
+  return `<div class="card"><div class="row wrap between" style="align-items:flex-start;gap:12px"><div><p class="eyebrow">Самооценка</p><p class="mt1 t-sm c-sec">${self ? "Пройдена 12-10-2026" : canFill ? "Оцените себя сами — сравнение с внешней оценкой покажет, где вы видите себя иначе." : "Руководитель ещё не проходил самооценку."}</p></div>${canFill ? `<button class="btn btn-${self ? "secondary" : "primary"}" onclick="openSelfForm()">${ic("user-check")}${self ? "Пройти заново" : "Пройти самооценку"}</button>` : ""}</div>${rows}</div>`;
+}
+function openSelfForm(){
+  closeOverlays();
+  const el = document.createElement("div"); el.className = "scrim sheet-scrim"; el.id = "overlay";
+  el.innerHTML = `<aside class="sheet" role="dialog" aria-modal="true"><form novalidate class="col" style="gap:24px;padding:24px 32px 32px" id="selfForm"><div class="row between"><p class="eyebrow">Самооценка</p><button type="button" class="round-btn" data-x aria-label="Закрыть">${ic("x")}</button></div>
+  <div style="margin-top:-12px"><h2 style="font-size:32px;line-height:1.2">Как вы оцениваете себя</h2><p class="mt2 t-sm c-sec">Поставьте себе балл от 0 до 5 по каждой компетенции — честно, как видите сами. Результат увидят ваш куратор и HR-отдел. Изменить его нельзя, но самооценку можно пройти заново.</p></div>
+  <ul class="divide">${COMPS.map(c => `<li style="display:grid;gap:12px;padding:16px 0;grid-template-columns:minmax(0,1fr) 96px"><div style="min-width:0">${CTag(c.id, "t-base c-text")}<input class="inp mt2 t-sm" placeholder="Почему так (необязательно)" aria-label="Пояснение: ${c.name}"></div><div class="field"><label class="label">Балл</label><input class="inp tab" inputmode="decimal" data-score aria-label="Балл: ${c.name}"><p class="err" hidden></p></div></li>`).join("")}</ul>
+  <div class="row end wrap" style="gap:12px"><button type="button" class="btn btn-secondary" data-x>Отмена</button><button type="submit" class="btn btn-primary">Сохранить самооценку</button></div></form></aside>`;
+  el.addEventListener("click", e => { if (e.target === el || e.target.closest("[data-x]")) el.remove(); });
+  el.querySelector("form").onsubmit = e => { e.preventDefault(); let ok = true; const vals = [...el.querySelectorAll("[data-score]")].map(inp => { const raw = inp.value.replace(",", ".").trim(), v = Number(raw), er = inp.nextElementSibling; let msg = ""; if (raw === "") msg = "Поставьте балл"; else if (!Number.isFinite(v)) msg = "Введите число"; else if (v < 0 || v > 5) msg = "От 0 до 5"; er.hidden = !msg; er.textContent = msg; inp.setAttribute("aria-invalid", !!msg); if (msg) ok = false; return v; }); if (!ok) return; S.self = vals; el.remove(); toast("Самооценка сохранена"); rerender(); };
+  document.body.appendChild(el); lucide.createIcons({nodes:[el]});
+}
+
+/* ===================== Карточка руководителя ===================== */
+function Tabs(items, value, base){ return `<div class="tabs mt8" role="tablist">${items.map(([k, l]) => `<button role="tab" aria-selected="${k === value}" class="${k === value ? "on" : ""}" onclick="go('${base}.${k}')">${l}</button>`).join("")}</div>`; }
+function PlanCardLink(m, href){
+  const p = planOf(m), live = p.tasks.filter(t => t.status !== "cancelled").length;
+  return `<ul class="col" style="gap:16px"><li><a href="${href}" class="card inter p56" style="display:block"><div class="row wrap between" style="align-items:flex-start;gap:12px"><div style="min-width:0"><p class="serif c-text" style="font-size:24px;line-height:1.3">${p.title}</p><p class="mt1 t-sm c-sec tab">${fmtDate(p.start)} – ${fmtDate(p.end)} · ${live} ${plural(live,["задача","задачи","задач"])}</p></div>${Badge(p.status === "active" ? "Запущен" : "Черновик", p.status === "active" ? "accent" : "neutral", true)}</div>${p.status !== "draft" ? `<div class="mt4" style="max-width:384px">${Progress(p.done, p.total, p.percent, true)}</div>` : ""}</a></li></ul>`;
+}
+function HistoryList(m){
+  const key = "hist-" + m.id, page = S.page[key] ?? 1;
+  const tasks = planOf(m).tasks, rows = [];
+  for (let i = 0; i < 26; i++) { const t = tasks[i % tasks.length]; const acts = ["Задача взята в работу","Отчёт отправлен на проверку","Добавлена подзадача","Задача принята куратором","Изменён срок задачи"]; rows.push({ at:new Date(2026,8,30,15,40 - i*53), act: acts[i % acts.length], subj:t.title.length > 90 ? t.title.slice(0, 90) + "…" : t.title, actor: i % 4 === 3 ? curById(m.curator).name : m.name }); }
+  rows.push({ at:new Date(2026,0,10,10,0), act:"План запущен", subj:planOf(m).title, actor:"Назарова Мадина Рустамовна" });
+  const pages = Math.ceil(rows.length / 10), shown = rows.slice((page-1)*10, page*10);
+  return `<p class="t-sm c-muted tab" style="margin-bottom:12px">Действий: ${rows.length}</p><div class="card p0" style="overflow:hidden"><ul class="divide">${shown.map(r => `<li class="row wrap" style="align-items:baseline;gap:4px 16px;padding:12px 20px"><span class="t-sm c-muted tab shrink0" style="width:160px">${fmtDT(r.at)}</span><span class="grow"><span style="display:block" class="c-text">${r.act}<span class="c-body"> · ${r.subj}</span></span><span class="mt1 t-sm c-sec" style="display:block">${r.actor}</span></span></li>`).join("")}</ul></div>${Pager(key, page, pages)}${S.user.area === "a" ? `<p class="mt3 t-sm c-muted"><a href="#a.audit" class="c-accent">Открыть в журнале</a></p>` : ""}`;
+}
+function AccountPanel(u, kind){
+  const isCur = kind === "curator";
+  return `<div class="grid2 acc"><div class="card"><p class="eyebrow">Данные</p><form novalidate class="col mt4" style="gap:20px" onsubmit="event.preventDefault();toast('Сохранено')">
+    <div class="field"><label class="label">ФИО</label><input class="inp" value="${esc(u.name)}"></div>
+    <div class="field"><label class="label">${isCur ? "Должность в холдинге" : "Должность"}<span class="opt">необязательно</span></label><input class="inp" value="${esc(u.position ?? "")}"></div>
+    ${isCur ? `<label class="row" style="align-items:flex-start;gap:12px;cursor:pointer"><input type="checkbox" class="check" style="margin-top:3px"><span class="c-body">Также руководитель<span class="t-sm c-sec" style="display:block;margin-top:2px">У него появится свой ИПР и оценка, закреплённые за ним руководители останутся. Обратно в «только куратор» не переводится.</span></span></label>` : ""}
+    ${kind === "manager" ? `<div class="field"><label class="label">Компания</label>${Select("acc-co", COMPANIES.map(c => [c.id, c.name]), u.company, "")}</div><label class="row" style="align-items:flex-start;gap:12px;cursor:pointer"><input type="checkbox" class="check" style="margin-top:3px"><span class="c-body">Также куратор<span class="t-sm c-sec" style="display:block;margin-top:2px">Принимает задачи закреплённых за ним руководителей и выполняет свой ИПР. Виден в списке кураторов.</span></span></label>` : ""}
+    <div class="field"><label class="label">Email (логин)</label><input class="inp" value="${u.email}" readonly disabled><p class="hint">Меняет сам владелец учётной записи в «Личных данных»</p></div>
+    <div class="field"><label class="label">Телефон</label><input class="inp" value="${u.phone ?? ""}" placeholder="Не указан" readonly disabled><p class="hint">Указывает сам владелец учётной записи в «Личных данных»</p></div>
+    <div><button type="submit" class="btn btn-primary">Сохранить</button></div></form></div>
+    <div class="col" style="gap:24px"><div class="card p56"><p class="eyebrow">Состояние</p><div class="mt3">${Badge("Активна","accent",true)}</div><dl class="col mt4 t-sm" style="gap:8px;margin-bottom:0"><div class="row between" style="gap:12px"><dt class="c-muted">Последний вход</dt><dd class="c-body tab" style="margin:0">${u.login ? fmtDate(u.login) + ", 15:40" : "Ещё не входил"}</dd></div><div class="row between" style="gap:12px"><dt class="c-muted">Создана</dt><dd class="c-body tab" style="margin:0">30-09-2026, 15:40</dd></div></dl></div>
+    <div class="card p56"><p class="eyebrow">Доступ</p><p class="mt3 t-sm c-sec">Сброс пароля закрывает все сеансы и требует смены пароля при следующем входе.</p><div class="col mt4" style="gap:8px">
+      <button class="btn btn-secondary" onclick="dialog('Сбросить пароль?','${esc(u.name)} выйдет на всех устройствах. Новый временный пароль будет показан один раз.','Сбросить','primary',()=>toast('Пароль сброшен'))">Сбросить пароль</button>
+      <button class="btn btn-danger" onclick="dialog('Заблокировать учётную запись?','${esc(u.name)} сразу выйдет на всех устройствах и не сможет войти. Данные сохраняются, блокировку можно снять.','Заблокировать','danger',()=>toast('Учётная запись заблокирована'))">Заблокировать</button>
+      <button class="btn btn-text btn-sm" style="align-self:flex-start;color:var(--danger)" onclick="dialog('Удалить учётную запись?','${esc(u.name)} больше не сможет войти. Отменить удаление из интерфейса нельзя.','Удалить','danger',()=>toast('Учётная запись удалена'))">${ic("trash-2")}Удалить учётную запись</button></div></div></div></div>`;
+}
+function ManagerCard(id, tab, area){
+  const m = mgrById(id); if (!m) return Empty("Не найдено");
+  const admin = area === "a", base = admin ? `a.manager.${id}` : `c.ward.${id}`;
+  tab = tab || "assessment";
+  const tabs = [["assessment","Профиль оценки"],["plan","ИПР"],["history","История"]]; if (admin) tabs.push(["account","Учётная запись"]);
+  let body = "";
+  if (tab === "assessment") body = (admin ? `<div class="row end" style="margin-bottom:24px"><button class="btn btn-secondary" onclick="toast('Форма оценки открывается в боковой панели')">${ic("plus")}Внести оценку</button></div>` : "") + AssessmentProfile(m, { canEdit: admin, canSelf:false });
+  if (tab === "plan") body = admin ? `<div class="row end" style="margin-bottom:24px"><button class="btn btn-primary" onclick="dialog('Новый план развития','План создаётся черновиком: руководитель и куратор увидят его только после запуска.','Создать и открыть конструктор','primary',()=>go('a.plan.${id}'),'<div class=&quot;field&quot;><label class=&quot;label&quot;>Название</label><input class=&quot;inp&quot; value=&quot;План развития 2026&quot;></div>')">${ic("plus")}Создать план</button></div>` + PlanCardLink(m, `#a.plan.${id}`) : CuratorPlan(m);
+  if (tab === "history") body = HistoryList(m);
+  if (tab === "account") body = `<div class="col" style="gap:24px"><div class="card p56"><p class="eyebrow">Куратор</p><div class="row wrap mt3" style="gap:12px">${Select("acc-cur", CURATORS.map(c => [c.id, c.name]), m.curator, "", "320px")}<button class="btn btn-secondary" onclick="toast('Куратор назначен')">Назначить</button></div><p class="mt2 t-sm c-sec">Куратор принимает задачи руководителя. При смене задачи на проверке переходят к новому куратору.</p></div>${AccountPanel(m, "manager")}</div>`;
+  const head = admin
+    ? `<div class="mt2">${PageTitle(m.name, `${m.position} · ${coName(m.company)}`)}</div>`
+    : `<div class="row mt2" style="align-items:flex-start;gap:16px">${Avatar(m.name, "lg").replace('class="av', 'style="margin-top:4px" class="av')}<div class="grow">${PageTitle(m.name, `${m.position} · ${coName(m.company)}`)}<p class="row wrap mt2 t-sm c-sec" style="gap:4px 16px"><span style="min-height:44px;display:inline-flex;align-items:center">${m.email}</span>${m.phone ? `<span class="tab" style="min-height:44px;display:inline-flex;align-items:center">${m.phone}</span>` : ""}</p></div></div>`;
+  return Back(admin ? "a.managers" : "c.wards", admin ? "К списку руководителей" : "К подопечным") + head + Tabs(tabs, tab, base) + `<div class="mt6">${body}</div>`;
+}
+function CuratorPlan(m){
+  const p = planOf(m);
+  if (p.status === "draft") return `<div class="card">${Empty("План ещё не запущен", "HR-отдел ещё не запустил план этого подопечного.")}</div>`;
+  return `<div class="card p56"><div class="row wrap between" style="align-items:flex-end;gap:16px"><div><p class="eyebrow">План развития</p><h2 class="mt1" style="font-size:24px">${p.title}</h2><p class="mt1 t-sm c-sec tab">${fmtDate(p.start)} – ${fmtDate(p.end)}</p></div><div style="width:100%;max-width:320px">${Progress(p.done, p.total, p.percent)}</div></div></div>${PlanConclusions(p, true)}<div class="mt8">${TaskGroups(p.tasks)}</div>`;
+}
+
+/* ===================== Карточка задачи и группы ===================== */
+function TaskCard(t, trailing="", click=""){
+  const over = t.dl.kind === "overdue" && t.status !== "accepted" && t.status !== "cancelled";
+  return `<div class="task${t.status === "cancelled" ? " cancelled" : ""}${click ? " click" : ""}" ${click ? `onclick="${click}"` : ""}>${over ? '<span class="ov"></span>' : ""}<div class="grow"><p class="tt${t.status === "cancelled" ? " strike" : ""}">${t.title}</p><div class="meta">${CTag(t.comp)}<span class="t-xs c-muted">${t.type}</span>${t.status === "accepted" || t.status === "cancelled" ? `<span class="dl norm">до ${fmtDate(t.deadline)}</span>` : DL(t)}<span class="t-xs c-muted tab">${t.sub} подзадач</span></div></div><div class="col shrink0" style="align-items:flex-end;gap:8px">${StatusBadge(t.status)}${trailing}</div></div>`;
+}
+const GROUPS = [["todo","Нужно сделать",["assigned","in_progress"]],["returned","На доработке",["returned"]],["review","На проверке",["on_review"]],["done","Принято",["accepted"]],["cancelled","Отменено",["cancelled"]]];
+function TaskGroups(tasks, link){
+  let idx = 0;
+  return `<div class="col" style="gap:32px">${GROUPS.map(([k, title, sts]) => { const items = tasks.filter(t => sts.includes(t.status)).sort((a, b) => (a.dl.kind === "overdue" ? 0 : 1) - (b.dl.kind === "overdue" ? 0 : 1) || a.deadline.localeCompare(b.deadline)); if (!items.length) return ""; return `<section aria-label="${title}"><h2 class="row" style="align-items:baseline;gap:8px;font-size:20px">${title}<span class="t-sm c-muted tab" style="font-family:var(--sans)">${items.length}</span></h2><ul class="col mt3" style="gap:12px">${items.map(t => `<li class="fade-up" style="animation-delay:${Math.min(idx++, 8)*0.04}s">${TaskCard(t, "", link ? `go('${link}.${t.id}')` : "")}</li>`).join("")}</ul></section>`; }).join("")}</div>`;
+}
+function PlanConclusions(p, curator=false){
+  return `<div class="card p56 mt6"><div class="row wrap between" style="gap:12px"><p class="eyebrow">Итоги плана</p><button class="btn btn-secondary btn-sm" onclick="S.backTo=location.hash.slice(1);go('rep.${p.id}')">${ic("file-text")}Отчёт по плану</button></div><div class="grid2 half mt4" style="gap:20px"><div><p class="t-sm fw5 c-sec">Итог HR</p><p class="mt2 t-sm c-muted">Появится, когда HR-отдел завершит план.</p></div><div><p class="t-sm fw5 c-sec">Заключение куратора</p><p class="mt2 t-sm c-muted">${curator ? "Напишите, чего подопечный добился за план и над чем работать дальше." : "Куратор ещё не написал заключение."}</p>${curator ? `<button class="btn btn-secondary btn-sm mt3" onclick="dialog('Заключение по плану','Заключение увидят подопечный и HR-отдел, оно попадёт в отчёт по плану.','Сохранить','primary',()=>toast('Заключение сохранено'),'<div class=&quot;field&quot;><label class=&quot;label&quot;>Заключение</label><textarea class=&quot;inp&quot; rows=&quot;8&quot;></textarea><p class=&quot;hint&quot;>Что получилось, что изменилось в работе, что рекомендуете на следующий период</p></div>')">${ic("pencil")}Написать заключение</button>` : ""}</div></div></div>`;
+}
+
+/* ===================== Конструктор ИПР ===================== */
+function PlanPage(id){
+  const m = mgrById(id), p = planOf(m), sc = scoresOf(m), cur = curById(m.curator);
+  const live = p.tasks.filter(t => t.status !== "cancelled");
+  const zones = COMPS.map((c, i) => [c.id, sc[i]]).filter(z => z[1] < 3).sort((a, b) => a[1] - b[1]);
+  const prac = live.length ? Math.round(live.filter(t => t.type === "Практика").length / live.length * 100) : 0;
+  const bal = [["Практика", prac, 70], ["Наставничество", 0, 20], ["Обучение", 0, 10]].map(([t, v, tg]) => ({ t, v, tg, skew: Math.abs(v - tg) > 20 }));
+  const order = S.sel["order-" + id] ?? p.tasks.map(t => t.id), tasks = order.map(i => p.tasks.find(t => t.id === i));
+  const editable = st => !["on_review","accepted","cancelled"].includes(st);
+  const cancelable = st => !["accepted","cancelled","on_review"].includes(st);
+  return Back(`a.manager.${id}.plan`, "К карточке руководителя") + `<div class="mt2">${PageTitle(p.title, [m.name, m.position, coName(m.company)].join(" · "))}</div>
+  <div class="card p56 mt8"><div class="row wrap between" style="gap:16px"><div style="min-width:0"><div class="row wrap" style="gap:8px">${Badge(p.status === "active" ? "Запущен" : "Черновик", p.status === "active" ? "accent" : "neutral", true)}<span class="t-sm c-sec tab">${fmtDate(p.start)} – ${fmtDate(p.end)}</span>${p.launched ? `<span class="t-sm c-muted">· запущен ${fmtDate(p.launched)}</span>` : ""}</div><p class="mt2 t-sm c-sec">Куратор: <span class="c-text">${cur.name}</span></p></div>
+  <div class="row wrap" style="gap:8px"><button class="btn btn-secondary btn-sm" onclick="dialog('Название и период','','Сохранить','primary',()=>toast('План сохранён'),'<div class=&quot;field&quot;><label class=&quot;label&quot;>Название</label><input class=&quot;inp&quot; value=&quot;${esc(p.title).replace(/"/g, "")}&quot;></div>')">${ic("pencil")}Название и период</button>${p.status === "active" ? `<button class="btn btn-secondary btn-sm" onclick="dialog('Завершить план?','Руководитель и куратор получат уведомления. Итог HR попадёт в отчёт по плану.','Завершить план','primary',()=>toast('План завершён'),'<div class=&quot;field&quot;><label class=&quot;label&quot;>Итог HR<span class=&quot;opt&quot;>необязательно</span></label><textarea class=&quot;inp&quot; rows=&quot;4&quot;></textarea></div>')">Завершить план</button>` : `<button class="btn btn-primary btn-sm" onclick="dialog('Запустить план?','Руководитель ${esc(m.name)} и куратор ${cur.name} получат уведомления. Задачи (${live.length}) станут видны руководителю. Период плана после запуска менять нельзя.','Запустить','primary',()=>toast('План запущен'))">${ic("rocket")}Запустить план</button>`}</div></div>
+  ${p.status !== "draft" ? `<div class="mt5" style="max-width:384px">${Progress(p.done, p.total, p.percent)}</div>` : ""}</div>
+  ${p.status !== "draft" ? PlanConclusions(p) : ""}
+  <div class="grid2 plan mt6"><div class="col" style="gap:24px">
+    <div class="card p5"><p class="eyebrow">Зоны роста</p><p class="mt1 t-xs c-muted">Из последней оценки. Клик подставляет компетенцию в новую задачу.</p>${zones.length ? `<ul class="col mt3" style="gap:4px">${zones.map(([k, v]) => { const n = live.filter(t => t.comp === k).length; return `<li><button onclick="newTask('${k}')" class="col" style="width:100%;align-items:flex-start;gap:2px;border-radius:8px;padding:8px;text-align:left" onmouseover="this.style.background='var(--surface-muted)'" onmouseout="this.style.background=''">${CTag(k, "t-base c-text")}<span class="t-xs c-muted tab" style="padding-left:14px">балл ${fmtScore(v)} из 5${n ? ` · ${n} ${plural(n,["задача","задачи","задач"])}` : " · задач нет"}</span></button></li>`; }).join("")}</ul>` : `<p class="mt3 t-sm c-sec">Нет оценки или все компетенции выше границы.</p>`}</div>
+    <div class="card p5"><p class="eyebrow">Баланс 70 / 20 / 10</p><ul class="col mt3" style="gap:12px">${bal.map(b => `<li><div class="row between t-sm" style="align-items:baseline"><span class="c-body">${b.t}</span><span class="tab" style="color:${b.skew ? "var(--danger)" : "var(--text-secondary)"}">${b.v}% <span class="c-muted">/ ${b.tg}%</span></span></div>${Meter(b.v/100, b.skew ? "var(--st-soon)" : "var(--accent)", "mt2")}</li>`).join("")}</ul>${bal.some(b => b.skew) ? `<p class="mt3 t-xs c-sec">Перекос: доля отличается от целевой больше чем на 20 п.п.</p>` : ""}</div>
+  </div>
+  <div><div class="row between" style="gap:12px"><h2 style="font-size:24px">Задачи <span class="t-sm c-muted tab" style="font-family:var(--sans)">${live.length}</span></h2><button class="btn btn-primary" onclick="newTask()">${ic("plus")}Добавить задачу</button></div>
+  <ul class="col mt4" style="gap:12px">${tasks.map((t, i) => `<li class="row" style="align-items:flex-start;gap:4px"><div class="col shrink0" style="align-items:center;padding-top:12px">${["grip-vertical","arrow-up","arrow-down"].map((n, j) => `<button aria-label="${["Перетащить","Выше","Ниже"][j]}" ${j === 1 && i === 0 || j === 2 && i === tasks.length - 1 ? "disabled" : ""} onclick="moveTask('${id}',${i},${j === 1 ? -1 : j === 2 ? 1 : 0})" class="row" style="justify-content:center;width:32px;height:32px;border-radius:50%;color:var(--text-muted);${j === 0 ? "cursor:grab" : ""};${(j === 1 && i === 0) || (j === 2 && i === tasks.length - 1) ? "opacity:.3" : ""}">${ic(n)}</button>`).join("")}</div>
+    <div class="grow">${TaskCard(t, editable(t.status) || cancelable(t.status) ? `<span class="row" style="gap:2px">${editable(t.status) ? `<button class="btn btn-ghost btn-icon sm" aria-label="Изменить: задача" onclick="newTask('${t.comp}','${t.id}')">${ic("pencil")}</button>` : ""}${cancelable(t.status) ? `<button class="btn btn-ghost btn-icon sm text-danger" aria-label="Отменить: задача" onclick="dialog('Отменить задачу?','Задача перестанет учитываться в прогрессе. Руководитель получит уведомление с причиной.','Отменить задачу','danger',()=>toast('Задача отменена'),'<div class=&quot;field&quot;><label class=&quot;label&quot;>Причина отмены</label><textarea class=&quot;inp&quot; rows=&quot;3&quot;></textarea></div>')">${ic("circle-x")}</button>` : ""}</span>` : "")}</div></li>`).join("")}</ul></div></div>`;
+}
+function moveTask(id, i, d){ if (!d) return; const p = planOf(mgrById(id)); const order = (S.sel["order-" + id] ?? p.tasks.map(t => t.id)).slice(); const j = i + d; if (j < 0 || j >= order.length) return; [order[i], order[j]] = [order[j], order[i]]; S.sel["order-" + id] = order; rerender(); }
+function newTask(comp="k1", edit){
+  dialog(edit ? "Изменить задачу" : "Новая задача", "", edit ? "Сохранить" : "Добавить", "primary", () => toast(edit ? "Задача сохранена" : "Задача добавлена"),
+    `<div class="col" style="gap:20px"><div class="field"><label class="label">Компетенция</label>${Select("nt-c", COMPS.map(c => [c.id, c.name]), comp, "")}</div><div class="field"><label class="label">Название</label><input class="inp"></div><div class="field"><label class="label">Ожидаемый результат</label><textarea class="inp" rows="3"></textarea></div><div class="grid2 half" style="gap:16px"><div class="field"><label class="label">Тип</label>${Select("nt-t", [["practice","Практика"],["mentoring","Наставничество"],["learning","Обучение"]], "practice", "")}</div><div class="field"><label class="label">Срок</label><input class="inp tab" placeholder="ДД-ММ-ГГГГ"></div></div></div>`);
+}
+
+/* ===================== Кураторы ===================== */
+function CuratorsPage(){
+  const list = CURATORS.slice().sort((a, b) => collator.compare(a.name, b.name));
+  return PageTitle("Кураторы", "Руководители холдинга, которые принимают задачи закреплённых за ними руководителей.") +
+  `<div class="row end mt8"><button class="btn btn-primary" onclick="addUser('curator')">${ic("plus")}Добавить куратора</button></div>
+  <ul class="cards3 mt4">${list.map(c => `<li><a href="#a.curator.${c.id}" class="card inter p5 row" style="height:100%;align-items:flex-start;gap:16px">${Avatar(c.name, "md")}<div class="grow"><p class="serif c-text" style="font-size:20px;line-height:1.25">${c.name}</p><p class="mt1 t-sm c-sec">${c.position}</p><p class="mt2 t-sm c-muted tab">${c.managers} ${plural(c.managers,["руководитель","руководителя","руководителей"])}</p><p class="mt1 t-sm c-muted tab">${[`проверяет в среднем за ${fmtScore(c.avg)} раб. дн.`, c.waiting ? `ждут проверки ${c.waiting}` : null].filter(Boolean).join(" · ")}${c.delayed ? `<span style="color:var(--st-overdue)"> · дольше срока ${c.delayed}</span>` : ""}</p><div class="mt3">${Badge("Активна","accent",true)}</div></div></a></li>`).join("")}</ul>`;
+}
+function CuratorPage(id){
+  const c = curById(id), wards = MANAGERS.filter(m => m.curator === id);
+  return Back("a.curators", "К списку кураторов") + `<div class="mt2">${PageTitle(c.name, c.position)}</div>
+  <div class="card p56 mt8"><p class="eyebrow">Закреплённые руководители</p><ul class="mt3 divide">${wards.map(m => `<li><a class="row lnk" href="#a.manager.${m.id}" style="min-height:56px;gap:12px;padding:8px 0">${Avatar(m.name)}<span class="grow"><span style="display:block">${m.name}</span><span class="t-sm c-sec" style="display:block">${m.position} · ${coName(m.company)}</span></span></a></li>`).join("")}</ul></div>
+  <div class="mt6">${AccountPanel({ name:c.name, position:c.position, email:c.email, phone:null, login:null }, "curator")}</div>`;
+}
+
+/* ===================== HR-отдел (суперадмин) ===================== */
+const OBSERVER = { name:"Ҳакимов Ӯктам Ҷамшедович", email:"observer@audit.test" };
+function PersonCard(p, href){ return `<li><a href="#${href}" class="card inter p5 row" style="height:100%;align-items:flex-start;gap:16px">${Avatar(p.name, "md")}<div class="grow"><p class="serif c-text" style="font-size:20px;line-height:1.25">${p.name}</p><p class="mt1 t-sm c-muted trunc">${p.email}</p><div class="mt3">${Badge("Активна","accent",true)}</div></div></a></li>`; }
+function HrPage(){
+  return PageTitle("HR-отдел", "Те, кто ведёт платформу: вносят оценки, составляют и запускают планы, создают задачи, заводят руководителей и кураторов.") +
+  `<div class="row end mt8"><button class="btn btn-primary" onclick="addUser('hr')">${ic("plus")}Добавить сотрудника HR</button></div>
+  <ul class="cards3 mt4">${PersonCard(USERS.hr, "a.hrp.hr")}</ul>
+  <div class="row wrap between mt12" style="align-items:flex-end;gap:12px"><div><h2 style="font-size:24px">Наблюдатели</h2><p class="mt1 t-sm c-sec" style="max-width:60ch">Руководство холдинга: видят дашборд, аналитику, руководителей, оценки и планы по всем компаниям. Ничего не меняют и задач не принимают.</p></div><button class="btn btn-secondary" onclick="addUser('observer')">${ic("plus")}Добавить наблюдателя</button></div>
+  <ul class="cards3 mt4">${PersonCard(OBSERVER, "a.hrp.obs")}</ul>`;
+}
+function HrPerson(id){ const p = id === "obs" ? OBSERVER : USERS.hr; return Back("a.hr", "К HR-отделу") + `<div class="mt2">${PageTitle(p.name)}</div><div class="mt8">${AccountPanel({ name:p.name, position:"", email:p.email, phone:null, login:null }, "hr")}</div>`; }
+/* ===================== Оценки ===================== */
+const ASM_V = (() => { const o = {}; "1:2.7,2.8,2.7;2:3.4,2.7,3.4;3:2.6,2.7,2.6;4:2.8,2.7,2.8;5:;6:3.4,3.4;7:2.8,3.7,2.8;8:2.6,2.9,2.6;9:2.6,2.6;10:2.9,2.9;11:3.2,3.2;12:3.7,3.7;13:2.7,2.7;14:3.2,3.2;15:2.6,2.6;16:2.6,2.6;17:3.2,3.2,3.2;18:3.2,3.2;19:2.8,2.8;20:2.9,2.9;21:2.7,2.7;22:2.9,2.9;23:;24:2.5,2.5;25:3.3,3.3;26:2.7,2.7,2.7;27:2.6,2.6;28:;29:3.2,3.2;30:2.5,2.5,2.5;31:2.1,2.1,2.1;32:3.3,3.3,3.3;33:;34:3.7,3.7,3.7;35:3.4,3.4,3.4;36:2.9,2.9,2.9;37:2.8,2.8,2.8;38:3.2,3.2,3.2;39:;40:3.3,3.3,3.3;41:3.9,3.9,3.9;42:2.7,2.0,2.7;43:2.8,2.8,2.8;44:2.3,2.3,2.3;45:3.3,3.3,3.3;46:3.2,3.2,3.2;47:2.5,2.5,2.5;48:3.3,3.3,3.3;49:3.7,3.7,3.7;50:2.3,2.3,2.3;51:3.9,3.9,3.9;52:2.6,2.6,2.6;53:2.5,2.5,2.5;54:2.9,2.9,2.9;55:3.5,3.5,3.5;56:2.8,2.8,2.8;57:2.8,2.8,2.8;58:2.8,2.8,2.8;59:3.5,3.5,3.5;60:3.6,3.6,3.6;61:3.2,3.2,3.2;62:2.7,2.7,2.7;63:3.3,3.3,3.3;64:2.9,2.9,2.9;65:3.5,3.5,3.5;66:2.3,2.3,2.3;67:3.6,3.6,3.6;68:;69:2.1,2.1,2.1;70:2.7,2.7,2.7;71:2.7,2.7,2.7;72:2.3,2.3,2.3;73:2.5,2.5,2.5;74:2.7,2.7,2.7;75:3.1,3.1,3.1;76:2.5,2.5,2.5;77:3.2,3.2,3.2;78:2.0,2.0,2.0;79:2.9,2.9,2.9;80:2.9,2.9,2.9;81:3.8,3.8,3.8;82:2.9,2.9,2.9;83:3.3,3.3,3.3;84:2.5,2.5,2.5;85:3.3,3.3,3.3;86:3.4,3.4,3.4;87:3.3,3.3,3.3;88:2.7,2.7,2.7;89:2.9,2.9,2.9;90:2.7,2.7,2.7;91:2.6,2.6,2.6;92:3.5,3.5,3.5;93:3.2,3.2,3.2;94:3.2,3.2,3.2;95:2.7,2.7,2.7;96:3.3,3.3,3.3;97:3.4,3.4,3.4;98:3.5,3.5,3.5;99:3.5,3.5,3.5;100:2.5,2.5,2.5;101:3.1,3.1,3.1;102:2.8,2.8,2.8;103:2.8,2.8,2.8;104:2.7,2.7,2.7;105:3.2,3.2,3.2;106:2.5,2.5,2.5;107:3.3,3.3,3.3;108:3.1,3.1,3.1;109:3.8,3.8,3.8;110:3.9,3.9,3.9;111:2.3,2.3,2.3;112:2.7,2.7,2.7;113:2.6,2.6,2.6;114:;115:3.7,3.7,3.7;116:2.9,2.9,2.9;117:2.3,2.3,2.3;118:2.5,2.5,2.5;119:3.8,3.8,3.8;120:2.6,2.6,2.6;121:3.9,3.9,3.9;122:3.5,3.5,3.5;123:2.4,2.4,2.4;124:2.9,2.9,2.9;125:2.9,2.9,2.9;126:2.9,2.9,2.9;127:;128:3.1,3.1,3.1;129:2.7,2.7,2.7;130:3.4,3.4,3.4;131:2.8,2.8,2.8;132:3.2,3.2,3.2;133:3.1,3.1,3.1;134:2.9,2.9,2.9;135:2.8,2.8,2.8;136:2.4,2.4,2.4;137:3.2,3.2,3.2;138:3.3,3.3,3.3;139:2.6,2.6,2.6;140:;141:2.8,2.8,2.8;142:3.4,3.4,3.4;143:2.6,2.6,2.6;144:2.4,2.4,2.4;145:2.8,2.8,2.8;146:3.7,3.7,3.7;147:3.1,3.1,3.1;148:2.7,2.7,2.7;149:3.1,3.1,3.1;150:3.4,3.4,3.4;151:2.3,2.3,2.3;152:3.1,3.1,3.1;153:3.7,3.7,3.7;154:2.6,2.6,2.6;155:2.4,2.4,2.4;156:2.8,2.8,2.8;157:3.3,3.3,3.3;158:2.3,2.3,2.3;159:3.2,3.2,3.2;160:;161:3.8,3.8,3.8;162:3.2,3.2,3.2;163:3.8,3.8,3.8;164:3.5,3.5,3.5;165:2.7,2.7,2.7;166:2.8,2.8,2.8;167:3.7,3.7,3.7;168:2.4,2.4,2.4;169:3.3,3.3,3.3;170:2.9,2.9,2.9;171:2.9,2.9,2.9;172:3.1,3.1,3.1;173:2.8,2.8,2.8;174:2.9,2.9,2.9;175:3.3,3.3,3.3;176:2.7,2.7,2.7;177:2.8,2.8,2.8;178:2.5,2.5,2.5;179:2.6,2.6,2.6;180:3.2,3.2,3.2;181:3.3,3.3,3.3;182:3.2,3.2,3.2;183:;184:3.4,3.4,3.4;185:3.8,3.8,3.8;186:2.7,2.7,2.7;187:;188:3.6,3.6,3.6;189:2.5,2.5,2.5;190:2.5,2.5,2.5;191:;192:3.6,3.6,3.6;193:3.4,3.4,3.4;194:3.3,3.3,3.3;195:3.4,3.4,3.4;196:3.5,3.5,3.5;197:3.3,3.3,3.3;198:2.8,2.8,2.8;199:3.3,3.3,3.3;200:".split(";").forEach(x => { const [g, v] = x.split(":"); o[g] = v ? v.split(",").map(Number) : []; }); return o; })();
+function asmRows(){
+  if (S._asm) return S._asm;
+  const val = (g, k) => ASM_V[g]?.[k] ?? Math.round((2.1 + rnd("as" + g + k) * 1.8) * 10) / 10;
+  const rows = [{ m:mgrById("abd"), date:"2025-12-01", prov:PROVIDER, avg:2.6 }];
+  for (let g = 199; g >= 1; g--) rows.push({ m:mgrById("g" + g), date:"2025-12-01", prov:"Внешний провайдер", avg:val(g, 0) });
+  for (let g = 200; g >= 1; g--) rows.push({ m:mgrById("g" + g), date:"2025-12-01", prov:"Внешний провайдер", avg:val(g, 1) });
+  rows.push({ m:mgrById("g200"), date:"2025-12-01", prov:"Внешний провайдер", avg:val(200, 0) });
+  for (let g = 200; g >= 2; g--) rows.push({ m:mgrById("g" + g), date:"2024-12-01", prov:"Внешний провайдер", avg:val(g, 2) });
+  return S._asm = rows;
+}
+function AssessmentsPage(){
+  const rows = asmRows();
+  return PageTitle("Оценки", "Внешние оценки компетенций руководителей: ручной ввод и импорт из Excel.") +
+  `<div class="row end wrap mt8" style="gap:12px"><button class="btn btn-secondary" onclick="dialog('Импорт из Excel','Загрузите файл по шаблону: строка — руководитель, столбцы — компетенции.','Загрузить','primary',()=>toast('Файл проверен: ошибок нет'),'<div style=&quot;border:1px dashed var(--border-strong);border-radius:12px;padding:32px;text-align:center&quot; class=&quot;c-sec t-sm&quot;>Перетащите файл .xlsx сюда</div>')">${ic("file-spreadsheet")}Импорт из Excel</button><button class="btn btn-primary" onclick="toast('Форма оценки открывается в боковой панели')">${ic("plus")}Внести оценку</button></div>
+  <p class="mt3 t-sm c-muted tab">${rows.length} ${plural(rows.length,["оценка","оценки","оценок"])}</p>
+  <div class="card p0 mt4 scroll-x"><table class="tbl hov" style="min-width:900px"><colgroup><col><col style="width:113px"><col style="width:33%"><col style="width:138px"><col style="width:92px"></colgroup><thead><tr><th style="padding-left:24px">Руководитель</th><th>Дата</th><th>Кто оценивал</th><th>Средний балл</th><th style="padding-right:24px">Отчёт</th></tr></thead><tbody>${rows.map(r => `<tr><td style="padding-left:24px"><a class="lnk" href="#a.manager.${r.m.id}.assessment"><span class="fw5" style="display:block">${r.m.name}</span><span class="t-sm c-sec" style="display:block">${coName(r.m.company)}</span></a></td><td class="tab c-body">${fmtDate(r.date)}</td><td class="c-body">${r.prov}</td><td class="tab c-body">${fmtScore(r.avg)} из 5<span class="t-xs c-muted" style="display:block">8 компет.</span></td><td class="t-sm c-muted" style="padding-right:24px">Нет</td></tr>`).join("")}</tbody></table></div>`;
+}
+/* ===================== Библиотека ===================== */
+const LIB = {1:[70,2.7,29,52],9:null,17:[86,3.5,36,73],25:[91,3,33,79],33:[91,3,44,69],41:[83,3.1,38,67],49:[81,2.6,38,71],57:[96,3.1,52,83],2:[62,2.7,27,54],10:[94,2.9,37,68],18:[100,2.7,38,79],26:[79,3,28,65],34:[96,3.3,38,81],42:[96,3,40,79],50:[81,3,28,61],58:null,3:[91,2.9,44,81],11:[81,2.5,39,68],19:[93,3,34,73],27:[85,2.8,37,65],35:[85,3,34,69],43:[77,2.5,28,61],51:[84,2.6,33,60],59:null,4:[106,3,40,87],12:[89,3.5,37,81],20:[78,3.1,40,67],28:[90,2.6,31,65],36:[79,3.2,30,65],44:[114,2.8,45,89],52:[76,2.8,26,58],60:null,5:[39,3.4,11,26],13:[51,2.6,13,35],21:[45,3.5,13,29],29:[51,2.9,16,35],37:[43,3.2,15,29],45:[49,3.1,23,33],53:[38,3.2,11,24],6:[65,2.8,19,38],14:[49,3.1,17,26],22:[56,3.5,17,33],30:[64,2.6,17,33],38:[58,3,9,22],46:[54,2.4,10,26],54:[58,2.8,13,28],7:[47,3.5,13,30],15:[48,2.9,17,31],23:[43,3.3,11,30],31:[45,3.2,13,24],39:[41,3,16,28],47:[35,2.6,14,25],55:[41,3.2,14,27],8:[44,2.8,17,34],16:[46,3.6,19,28],24:[37,3.2,13,24],32:[46,3.4,15,30],40:[50,3.1,18,28],48:[40,3.4,14,27],56:[41,2.8,22,35]};
+const TEMPLATES = Array.from({length:60}, (_, i) => ({ id:"tp"+(i+1), n:i+1, comp:"k" + ((i % 8) + 1), title:"Шаблон " + (i+1), result:"Результат", stat:LIB[i+1] }));
+function LibraryPage(){
+  const q = (S.q.lib ?? "").trim().toLocaleLowerCase("ru"), cf = S.sel["lib-c"] ?? "";
+  const shown = TEMPLATES.filter(t => (!cf || t.comp === cf) && (!q || (t.title + " " + t.result).toLocaleLowerCase("ru").includes(q)));
+  const groups = COMPS.map(c => ({ c, items: shown.filter(t => t.comp === c.id) })).filter(g => g.items.length);
+  return PageTitle("Библиотека задач", "Типовые развивающие задачи по компетенциям. При составлении плана задача подставляется из библиотеки; оценки руководителей и кураторов показывают, какие задачи работают.") +
+  `<div class="row wrap mt8" style="gap:12px">${Search("lib-q", "Поиск по названию", S.q.lib, "S.q.lib=this.value;rerenderKeep('lib-q')", "222px")}${Select("lib-c", [["", "Все компетенции"], ...COMPS.map(c => [c.id, c.name])], cf, "S.sel['lib-c']=this.value;rerender()", "256px")}<button class="btn btn-primary" style="margin-left:auto" onclick="newTask()">${ic("plus")}Добавить задачу</button></div>
+  <p class="mt3 t-sm c-muted tab">${shown.length === TEMPLATES.length ? `${TEMPLATES.length} задач` : `Показано ${shown.length} из ${TEMPLATES.length}`}</p>
+  ${shown.length ? `<div class="col mt4" style="gap:32px">${groups.map(g => `<section><h2 class="row" style="align-items:baseline;gap:8px">${CTag(g.c.id, "t-lg c-text")}<span class="t-sm c-muted tab" style="font-family:var(--sans)">${g.items.length}</span></h2><ul class="col mt3" style="gap:12px">${g.items.map(t => `<li><div class="card p4s5 row" style="align-items:flex-start;gap:16px"><div class="grow"><p class="fw6 c-text t-md">${t.title}</p><p class="mt1 t-sm c-sec">${t.result}</p><p class="row wrap mt2 t-xs c-muted tab" style="gap:4px 12px"><span>Практика</span><span>подзадач: 3</span>${t.stat ? `<span>в планах: ${t.stat[0]}</span><span style="${t.stat[1] < 3 ? "color:var(--st-overdue)" : ""}">полезность ${fmtScore(t.stat[1])} из 5 (${t.stat[2]})</span><span>качество 4 из 5 (${t.stat[3]})</span>` : "<span>ещё не использовалась</span>"}</p></div><span class="row shrink0" style="gap:2px"><button class="btn btn-ghost btn-icon" aria-label="Изменить: ${t.title}" onclick="newTask('${t.comp}','${t.id}')">${ic("pencil")}</button><button class="btn btn-ghost btn-icon text-danger" aria-label="Удалить: ${t.title}" onclick="dialog('Удалить задачу из библиотеки?','«${t.title}» больше нельзя будет выбрать при составлении плана.','Удалить','danger',()=>toast('Задача удалена из библиотеки'))">${ic("trash-2")}</button></span></div></li>`).join("")}</ul></section>`).join("")}</div>` : `<div class="card mt4">${Empty("Ничего не нашли", "Измените запрос или выберите другую компетенцию.", `<button class="btn btn-secondary" onclick="S.q.lib='';S.sel['lib-c']='';rerender()">Сбросить поиск</button>`)}</div>`}`;
+}
+
+/* ===================== Компании и компетенции ===================== */
+function CompaniesPage(){
+  return PageTitle("Компании", "Дочерние компании холдинга: к ним относятся руководители.") + `<div class="card mt8"><div class="row between" style="align-items:flex-start;gap:16px"><div><p class="eyebrow">Компании</p><h2 class="mt1" style="font-size:24px">Дочерние компании холдинга</h2></div><button class="btn btn-secondary btn-sm" onclick="dialog('Новая компания','','Добавить','primary',()=>toast('Компания добавлена'),'<div class=&quot;field&quot;><label class=&quot;label&quot;>Название</label><input class=&quot;inp&quot;></div>')">${ic("plus")}Добавить</button></div>
+  <ul class="mt6 divide">${COMPANIES.map(c => { const off = S.cosOff[c.id]; return `<li class="row" style="min-height:56px;gap:12px;padding:8px 0"><div class="grow"><p class="${off ? "c-muted strike" : "c-text"}">${c.name}</p><p class="t-sm c-muted tab">${c.managers} ${plural(c.managers,["руководитель","руководителя","руководителей"])}</p></div>${off ? Badge("Отключена") : ""}<button class="btn btn-ghost btn-icon sm" aria-label="Переименовать ${esc(c.name)}" onclick="dialog('Переименовать компанию','','Сохранить','primary',()=>toast('Компания переименована'),'<div class=&quot;field&quot;><label class=&quot;label&quot;>Название</label><input class=&quot;inp&quot; value=&quot;${esc(c.name).replace(/&quot;/g, "")}&quot;></div>')">${ic("pencil")}</button><button class="btn btn-text btn-sm" onclick="S.cosOff['${c.id}']=!S.cosOff['${c.id}'];toast(S.cosOff['${c.id}']?'Компания отключена':'Компания включена');rerender()">${off ? "Включить" : "Отключить"}</button><button class="btn btn-ghost btn-icon sm text-danger" title="Удалить" aria-label="Удалить" onclick="dialog('Удалить компанию?','В компании «${esc(c.name)}» ${c.managers} ${plural(c.managers,["действующий руководитель","действующих руководителя","действующих руководителей"])}. Сначала переведите их в другую компанию — иначе удалить не получится.','Удалить','danger',()=>toast('Удалить нельзя: в компании есть руководители'))">${ic("trash-2")}</button></li>`; }).join("")}</ul></div>`;
+}
+function SettingsPage(){
+  const list = S.competencies;
+  return PageTitle("Компетенции", "Модель компетенций руководителя и шкала оценки.") + `<div class="col mt8" style="gap:24px"><div class="card"><div class="row between" style="align-items:flex-start;gap:16px"><div><p class="eyebrow">Компетенции</p><h2 class="mt1" style="font-size:24px">Модель компетенций руководителя</h2><p class="mt2 t-sm c-sec" style="max-width:60ch">Порядок задаёт цвет метки и оси на «Розе компетенций». Отключённые не участвуют в новых оценках.</p></div><button class="btn btn-secondary btn-sm" onclick="dialog('Новая компетенция','','Добавить','primary',()=>toast('Компетенция добавлена'),'<div class=&quot;col&quot; style=&quot;gap:20px&quot;><div class=&quot;field&quot;><label class=&quot;label&quot;>Название</label><input class=&quot;inp&quot;></div><div class=&quot;field&quot;><label class=&quot;label&quot;>Группа<span class=&quot;opt&quot;>необязательно</span></label><input class=&quot;inp&quot;><p class=&quot;hint&quot;>Например: «Управление людьми», «Стратегия»</p></div></div>')">${ic("plus")}Добавить</button></div>
+  <ol class="mt6 divide" style="padding:0">${list.map((c, i) => { const off = S.compsOff[c.id]; return `<li class="row" style="min-height:56px;align-items:flex-start;gap:12px;padding:12px 0"><span class="cdot" style="margin-top:9px;background:${COLORS[i]}"></span><div class="grow"><p class="${off ? "c-muted strike" : "c-text"}">${c.name}</p><p class="t-sm c-muted" style="margin-top:2px">${c.group}</p></div>${off ? Badge("Отключена") : ""}<div class="row shrink0" style="gap:2px"><button class="btn btn-ghost btn-icon sm" aria-label="Выше" ${i === 0 ? "disabled" : ""} onclick="moveComp(${i},-1)">${ic("arrow-up")}</button><button class="btn btn-ghost btn-icon sm" aria-label="Ниже" ${i === list.length - 1 ? "disabled" : ""} onclick="moveComp(${i},1)">${ic("arrow-down")}</button><button class="btn btn-ghost btn-icon sm" aria-label="Изменить ${c.name}" onclick="toast('Форма компетенции открывается в окне')">${ic("pencil")}</button><button class="btn btn-text btn-sm" style="margin:0 6px" onclick="S.compsOff['${c.id}']=!S.compsOff['${c.id}'];toast(S.compsOff['${c.id}']?'Компетенция отключена':'Компетенция включена');rerender()">${off ? "Включить" : "Отключить"}</button><button class="btn btn-ghost btn-icon sm text-danger" title="Удалить" aria-label="Удалить ${c.name}" onclick="dialog('Удалить компетенцию?','«${c.name}» исчезнет из списка компетенций, из новых оценок и задач. Уже внесённые оценки и задачи по ней сохранятся. Цвета меток у компетенций ниже по списку сдвинутся.','Удалить','danger',()=>toast('Компетенция удалена'))">${ic("trash-2")}</button></div></li>`; }).join("")}</ol></div>
+  <div class="card"><p class="eyebrow">Шкала и сроки</p><h2 class="mt1" style="font-size:24px">Параметры оценки</h2><form novalidate class="mt6" style="display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))" onsubmit="event.preventDefault();toast('Настройки сохранены')">
+    ${[["Максимальный балл","5","Верхняя граница шкалы оценки компетенций"],["Граница зоны роста","3","Балл ниже этого значения — зона роста"],["«Скоро срок», дней","7","За сколько дней до дедлайна задача помечается"],["Срок проверки, рабочих дней","5","После — «Проверка задерживается» у HR-директора"]].map(([l, v, h]) => `<div class="field"><label class="label">${l}</label><input class="inp tab" inputmode="decimal" value="${v}" style="max-width:160px"><p class="hint">${h}</p></div>`).join("")}
+    <div style="grid-column:1/-1"><button class="btn btn-primary" type="submit">Сохранить</button></div></form></div></div>`;
+}
+function moveComp(i, d){ const l = S.competencies, j = i + d; [l[i], l[j]] = [l[j], l[i]]; rerender(); }
+
+/* ===================== Журнал ===================== */
+const AUDIT_P1 = ["000d8d88","802e95ad","212063c6","a0c5b29f","a0c5b29f","4166b7c0","4166b7c0","c1e553e9","611263f3","611263f3"];
+function AuditPage(){
+  const key = "audit", page = S.page[key] ?? 1, pages = 1000, base = new Date(2026,8,30,15,40);
+  const rows = Array.from({length:10}, (_, k) => { const idx = (page - 1)*10 + k, at = new Date(base.getTime() - Math.floor((idx + 1)/2.7)*40*60000); return { idx, at, id: page === 1 ? AUDIT_P1[k] : (hash("a" + idx) >>> 0).toString(16).padStart(8, "0").slice(0, 8) }; });
+  const open = S.sel.auditOpen;
+  return PageTitle("Журнал", "Кто, что и когда изменил. Журнал только дописывается.") +
+  `<form class="mt8" style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))" onsubmit="event.preventDefault();toast('Фильтры применены')"><input class="inp" placeholder="Кто: ФИО или email" aria-label="Кто" style="grid-column:span 2"><input class="inp mono" placeholder="Идентификатор задачи, плана, учётки" aria-label="Идентификатор" style="grid-column:span 2"><div class="inp-wrap"><input class="inp has-trail tab" placeholder="ДД-ММ-ГГГГ" aria-label="С даты"><span class="trail" style="right:14px;color:var(--text-muted)">${ic("calendar")}</span></div><div class="inp-wrap"><input class="inp has-trail tab" placeholder="ДД-ММ-ГГГГ" aria-label="По дату"><span class="trail" style="right:14px;color:var(--text-muted)">${ic("calendar")}</span></div><button class="btn btn-secondary" type="submit">Показать</button></form>
+  <p class="mt3 t-sm c-muted tab">Записей: 100000 · страница ${page} из ${pages}</p>
+  <div class="card p0 mt4" style="overflow:hidden"><ul class="divide">${rows.map(r => `<li><button onclick="S.sel.auditOpen=S.sel.auditOpen===${r.idx}?null:${r.idx};rerender()" aria-expanded="${open === r.idx}" class="row wrap" style="width:100%;gap:4px 16px;padding:12px 20px;text-align:left"><span class="t-sm c-muted tab shrink0" style="width:160px">${fmtDT(r.at)}</span><span class="grow"><span style="display:block" class="c-text">Задача взята в работу</span><span class="t-sm c-sec" style="display:block">Руководитель · manager@audit.test</span></span><span class="t-xs c-muted">task · ${r.id}…</span></button>${open === r.idx ? `<div style="padding:0 20px 16px 196px" class="t-sm"><div style="border-radius:12px;background:var(--surface-muted);padding:12px 16px"><p class="c-sec">Статус: <span class="c-body">Назначена</span> → <span class="c-text fw5">В работе</span></p><p class="mt1 c-muted mono">id ${r.id}-4c1e-9a7b-2f6d0e1c3b5a · IP 10.0.0.12</p></div></div>` : ""}</li>`).join("")}</ul></div>${Pager(key, page, pages)}`;
+}
+
+/* ===================== Куратор: уведомления; руководитель ===================== */
+function NotificationsPage(role){
+  const list = NOTIF[role], u = unread(role);
+  return PageTitle("Уведомления") + (u ? `<div class="row end mt6"><button class="btn btn-secondary btn-sm" onclick="readAll()">Прочитать все</button></div>` : "") +
+  (list.length ? `<ul class="col mt4" style="gap:8px">${list.map(n => `<li><a href="#${role === "mgr" ? "m.plan" : "c.review"}" class="card inter p4 row" style="align-items:flex-start;gap:12px;${!n.read && !S.readAll[role] ? "border-left:2px solid var(--accent)" : ""}">${NotifBody(n, "md")}</a></li>`).join("")}</ul>` : `<div class="card mt6">${Empty("Уведомлений пока нет", "Здесь появятся сроки, решения куратора и комментарии.")}</div>`);
+}
+function MyPlan(){
+  const m = mgrById("abd"), p = planOf(m), sc = scoresOf(m);
+  const next = ["t3","t2","t5"].map(id => ABD_TASKS.find(t => t.id === id));
+  const growth = COMPS.map((c, i) => [c, sc[i]]).filter(z => z[1] < 3).sort((a, b) => a[1] - b[1]);
+  return PageTitle("Мой план", `${LONG_CO} · ${ABD_POS}`) + `<section class="col mt8" style="gap:16px" aria-label="Сводка"><div class="tiles four">${StatTile("Выполнение", 20, "Принято 1 из 5", "%")}${StatTile("Нужно сделать", 3, "На доработке: 1")}${StatTile("На проверке", 1, "У куратора")}${StatTile("Просрочено", 1, "Скоро срок: 2", "", "overdue")}</div>
+  <div class="grid2 half" style="gap:16px"><div class="card p56" style="min-width:0"><p class="eyebrow">Ближайшие сроки</p><ul class="mt2 divide">${next.map(t => `<li><a href="#m.task.${t.id}" class="row between" style="min-height:56px;gap:12px;padding:8px 0"><span class="grow"><span class="fw5 c-text trunc" style="display:block">${t.title}</span>${DL(t)}</span>${StatusBadge(t.status, "shrink0")}</a></li>`).join("")}</ul></div>
+  <div class="card p56" style="min-width:0"><p class="eyebrow">Моя оценка</p><p class="mt2 c-body tab">Средний балл <span class="serif c-text" style="font-size:24px">2,6</span> из 5 · оценка от 01-12-2025</p><p class="mt1 t-sm c-sec">Зоны роста: ${growth.slice(0, 3).map(z => z[0].name.toLocaleLowerCase("ru")).join(", ")}${growth.length > 3 ? ` и ещё ${growth.length - 3}` : ""}.</p><p class="mt1 t-sm c-sec">${S.self ? "Самооценка пройдена 12-10-2026." : "Самооценка ещё не пройдена — её можно пройти в профиле."}</p><a href="#m.profile" class="row c-accent mt3" style="min-height:44px;gap:8px;display:inline-flex">${S.self ? "Открыть профиль" : "Пройти самооценку"}${ic("arrow-right")}</a></div></div></section>
+  <div class="card p56 mt8"><div class="row wrap between" style="align-items:flex-end;gap:16px"><div><p class="eyebrow">План развития</p><h2 class="mt1" style="font-size:24px;max-width:460px">${p.title}</h2><p class="mt1 t-sm c-sec tab">${fmtDate(p.start)} – ${fmtDate(p.end)}</p></div><div style="width:100%;max-width:320px">${Progress(p.done, p.total, p.percent)}</div></div></div>
+  <div class="row end mt4"><button class="btn btn-secondary btn-sm" onclick="toast('Файл .ics со сроками скачивается в обычном браузере')">${ic("calendar-plus")}Сроки в календарь</button></div>
+  <div class="mt4">${TaskGroups(p.tasks, "m.task")}</div>
+  <div class="card p56 mt6"><p class="eyebrow">Ваш куратор</p><p class="mt2 serif c-text" style="font-size:20px">Куратор Қурбонов 1</p><p class="mt1 t-sm c-sec">Заместитель директора</p></div>`;
+}
+function MyReports(){
+  const C = Array(6).fill("Комментарий куратора: доработайте раздел с показателями.").join(" ");
+  const at = new Date(2026,8,27,16,13), dec = new Date(2026,8,30,16,13);
+  const items = [{ t:ABD_TASKS[4], files:2, dec:{ ok:false } }, { t:ABD_TASKS[3], files:2, dec:{ ok:true } }, { t:ABD_TASKS[0], files:10, dec:null }];
+  return PageTitle("Мои отчёты", "Задачи, которые вы отправляли куратору на проверку, и его решения.") + `<p class="mt6 t-sm c-muted tab">3 задачи · на проверке 1 · куратор Куратор Қурбонов 1</p><ul class="col mt4" style="gap:12px">${items.map(i => `<li><a href="#m.task.${i.t.id}" class="card inter p4s5" style="display:block"><div class="row between" style="align-items:flex-start;gap:8px"><p class="grow fw5 c-text">${i.t.title}</p>${StatusBadge(i.dec ? (i.dec.ok ? "accepted" : "returned") : "on_review")}</div><p class="row wrap mt1 t-sm c-sec" style="gap:4px 12px">${CTag(i.t.comp)}<span class="c-muted">${PLAN_TITLE_ABD}</span></p><p class="row wrap mt3 t-sm c-muted tab" style="gap:4px 12px"><span>Отправлено ${fmtDT(at)}</span><span class="row" style="gap:4px">${ic("paperclip")}${i.files}</span></p>${i.dec ? `<div class="mt3" style="border-radius:12px;background:var(--surface-muted);padding:12px"><p class="t-sm c-sec"><span class="fw5" style="color:${i.dec.ok ? "var(--accent-strong)" : "var(--danger)"}">${i.dec.ok ? "Принято" : "Возвращено на доработку"}</span><span class="c-muted tab"> · Куратор Қурбонов 1 · ${fmtDT(dec)}</span></p><p class="mt1 t-sm c-body">${C}</p></div>` : `<p class="mt3 t-sm c-sec">Куратор ещё не ответил.</p>`}</a></li>`).join("")}</ul>`;
+}
+function MyProfile(){ return PageTitle("Мой профиль", `${ABD_POS} · ${LONG_CO}`) + `<div class="mt8">${AssessmentProfile(mgrById("abd"), { canEdit:false, canSelf:true })}</div>`; }
+
+
+/* ===================== Задача руководителя (my/tasks/[id]) ===================== */
+const DESC = Array(39).fill("Подробное описание задачи.").join(" ");
+const EXPECT = Array(8).fill("Ожидаемый результат с измеримыми показателями.").join(" ");
+const RESULT = Array(22).fill("Результат работы: внедрена система еженедельной обратной связи.").join(" ");
+const STEP = "согласовать с финансовым отделом филиала Кӯрғонтеппа и подготовить сводную таблицу показателей";
+function Section(title, body, extra=""){ return `<div class="card p56 mt5"${extra}><p class="eyebrow">${title}</p>${body}</div>`; }
+function MyTask(id){
+  const t = ABD_TASKS.find(x => x.id === id) ?? ABD_TASKS[1];
+  const big = t.id === "t1" || t.id === "t2", n = big ? 30 : 3;
+  const done = i => t.status === "on_review" || t.status === "accepted" ? true : big ? i % 2 === 1 : i === 0;
+  const steps = Array.from({length:n}, (_, i) => { const k = "st-" + t.id + i, on = S.sel[k] ?? done(i); return `<li><label class="row" style="min-height:44px;gap:12px;cursor:pointer;align-items:center"><input type="checkbox" class="check" ${on ? "checked" : ""} ${["on_review","accepted","cancelled"].includes(t.status) ? "disabled" : ""} onchange="S.sel['${k}']=this.checked;rerender()"><span class="t-base" style="${on ? "text-decoration:line-through;color:var(--text-muted)" : "color:var(--text-body)"}">Шаг ${i+1}: ${STEP}</span></label></li>`; }).join("");
+  const canWork = ["assigned","in_progress","returned"].includes(t.status);
+  const files = Array.from({length:10}, (_, i) => (i % 3 === 2) ? `<a class="att" href="#m.task.${t.id}">${ic("link-2")}<span class="grow">Видеозапись совещания с руководителями филиалов</span>${ic("external-link")}</a>` : `<a class="att" href="#m.task.${t.id}">${ic("file-text")}<span class="grow trunc">Протокол_совещания_руководителей_филиалов_Ҳисор_и_Ғончӣ_№${i+1}_от_15-09-2026_финальная_версия.pdf</span><span class="t-xs c-muted tab shrink0">3,3 МБ</span></a>`).join("");
+  const report = `<p class="mt1 t-sm c-muted tab">Абдураҳмонзода Ҷамшеджон Ғуломқодирович · 27-09-2026, 16:13</p><p class="mt3 c-body">${RESULT}</p><p class="eyebrow mt5">Вложения</p><div class="col mt2" style="gap:8px">${files}</div>`;
+  const draft = S.q["res-" + t.id] ?? "";
+  let parts = Section("Зачем эта задача", `<p class="mt2 c-body">${DESC}</p><p class="eyebrow mt5">Ожидаемый результат</p><p class="mt2 c-body">${EXPECT}</p><p class="eyebrow mt5">Материалы</p><a class="att mt2" href="#m.task.${t.id}">${ic("link-2")}<span class="grow">Курс «Финансовое лидерство для руководителей дочерних компаний»</span>${ic("external-link")}</a>`);
+  if (t.id === "t2") parts += Section("Срок задачи", `<p class="mt1 c-text tab">до ${fmtDate(t.deadline)}</p>${S.sel.withdrawn ? `<div class="row end mt4"><button class="btn btn-secondary btn-sm" onclick="toast('Запрос на перенос срока отправлен в HR-отдел')">${ic("calendar-clock")}Попросить перенести срок</button></div>` : `<div class="mt4" style="border-radius:12px;background:var(--surface-muted);padding:16px"><div class="row wrap" style="gap:8px 12px"><span class="fw5 c-text tab">03-10-2026 → 15-11-2026</span><span class="badge" style="background:var(--surface);color:var(--text-secondary)"><span class="dot"></span>Ждёт решения HR</span></div><p class="mt1 t-xs c-muted tab">Запрошено 30-09-2026, 16:13</p><p class="mt2 c-body">${ABD_REASON}</p></div><div class="row end mt3"><button class="btn btn-text btn-sm" onclick="dialog('Отозвать запрос?','Запрос на перенос срока будет снят. Срок задачи останется 03-10-2026.','Отозвать','danger',()=>{S.sel.withdrawn=true;toast('Запрос отозван');rerender()})">Отозвать запрос</button></div>`}`);
+  parts += Section("Чек-лист", `<ul class="col mt2" style="gap:2px">${steps}</ul>`);
+  if (t.status === "on_review") parts += Section("На проверке", `<p class="mt2 c-body">Отчёт у куратора — Куратор Қурбонов 1. После решения вы получите уведомление.</p>`) + Section("Отчёт", report);
+  if (t.status === "accepted") parts += Section("Принято", `<p class="mt2 c-body">Куратор Қурбонов 1 принял задачу 30-09-2026, 16:13.</p>`) + Section("Отчёт", report);
+  if (t.status === "returned") parts += Section("На доработке", `<p class="mt2 c-body">${Array(6).fill("Комментарий куратора: доработайте раздел с показателями.").join(" ")}</p><p class="mt2 t-sm c-muted tab">Куратор Қурбонов 1 · 30-09-2026, 16:13</p>`);
+  if (t.status === "cancelled") parts += Section("Задача отменена", `<p class="mt2 c-body">Причина отмены: Потеряла актуальность после реорганизации</p>`);
+  if (canWork) {
+    const allDone = Array.from({length:n}, (_, i) => S.sel["st-" + t.id + i] ?? done(i)).every(Boolean);
+    const ready = draft.trim().length > 0 && allDone && S.sel["file-" + t.id];
+    parts += Section("Результат", `<div class="field mt3"><label class="label" for="res-${t.id}">Что сделано</label><textarea id="res-${t.id}" class="inp" rows="5" placeholder="Кратко: что сделано, какой результат получен" oninput="S.q['res-${t.id}']=this.value;rerenderKeep('res-${t.id}')">${esc(draft)}</textarea><p class="hint">Черновик сохраняется на этом устройстве</p></div>
+    <p class="eyebrow mt5">Доказательства · обязательно</p>
+    <label class="col mt2" style="cursor:pointer;align-items:center;gap:4px;border:1px dashed var(--border-strong);border-radius:12px;padding:24px 16px;text-align:center">${ic("upload")}<span class="t-sm c-body">${S.sel["file-" + t.id] ? "Файлов выбрано: 1" : "Перетащите файлы или нажмите, чтобы выбрать"}</span><span class="t-xs c-muted">Фото, видео, PDF, документы · фото сжимаются автоматически</span><input type="file" hidden onchange="S.sel['file-${t.id}']=this.files.length>0;rerender()"></label>
+    <button class="btn btn-text btn-sm mt3" onclick="toast('Поле для ссылки добавлено')">${ic("link-2")}Добавить ссылку</button>
+    <div class="row wrap end mt4" style="gap:12px"><p class="t-sm c-sec grow">Чтобы отправить: опишите результат, отметьте все подзадачи, приложите файл или ссылку.</p><button class="btn btn-primary" ${ready ? "" : "disabled"} style="${ready ? "" : "opacity:1;background:#8e8e8e"}" onclick="toast('Отчёт отправлен куратору')">${ic("send")}Отправить на проверку</button></div>`);
+  }
+  const comments = t.id === "t1" ? `<ul class="col mt3" style="gap:20px"><li class="row" style="align-items:flex-start;gap:12px">${Avatar("Куратор Қурбонов 1")}<div class="grow"><p class="t-sm"><span class="fw5 c-text">Куратор Қурбонов 1</span><span class="c-muted"> · Куратор · 30-09-2026, 16:13</span></p><p class="mt1 c-body">${Array(21).fill("Длинный комментарий куратора").join(" ")}</p></div></li><li class="row" style="align-items:flex-start;gap:12px">${Avatar(USERS.mgr.name)}<div class="grow" style="min-width:0"><p class="t-sm"><span class="fw5 c-text">${USERS.mgr.name}</span><span class="c-muted"> · Руководитель · 30-09-2026, 16:13</span></p><p class="mt1 c-body" style="overflow-wrap:anywhere">Ответ руководителя без пробелов: ${Array(6).fill("ОченьДлинноеСловоБезПробелов").join("")}</p></div></li></ul>` : `<p class="mt1 t-sm c-sec">Комментариев пока нет.</p>`;
+  const msg = S.q["cm-" + t.id] ?? "";
+  parts += Section("Комментарии", `${comments}<textarea id="cm-${t.id}" class="inp mt4" rows="4" placeholder="Написать куратору" oninput="S.q['cm-${t.id}']=this.value;rerenderKeep('cm-${t.id}')">${esc(msg)}</textarea><div class="row end mt2"><button class="btn btn-primary btn-sm" ${msg.trim() ? "" : "disabled"} style="${msg.trim() ? "" : "opacity:1;background:#8e8e8e"}" onclick="S.q['cm-${t.id}']='';toast('Комментарий отправлен куратору');rerender()">${ic("send")}Отправить</button></div>`);
+  return Back("m.plan", "К плану") + `<div class="row between mt1" style="gap:12px">${CTag(t.comp)}${StatusBadge(t.status)}</div><h1 class="mt2${t.status === "cancelled" ? " strike" : ""}" style="font-size:clamp(28px,3.4vw,36px);line-height:1.22;max-width:760px">${t.title}</h1><div class="row wrap mt2" style="gap:4px 12px"><span class="t-xs c-muted">Практика</span>${t.status === "accepted" || t.status === "cancelled" ? `<span class="dl norm">до ${fmtDate(t.deadline)}</span>` : DL(t)}</div><div class="mt6" style="margin-top:28px">${parts.replace('class="card p56 mt5"', 'class="card p56"')}</div>`;
+}
+
+/* ===================== Отчёт по плану (plans/[id]/report) ===================== */
+function ReportPage(id){
+  const m = mgrById(id) ?? mgrById("abd"), p = planOf(m), cur = curById(m.curator);
+  const isAbd = m.id === "abd";
+  const groups = COMPS.map(c => ({ c, items: p.tasks.filter(t => t.comp === c.id) })).filter(g => g.items.length);
+  const extra = t => t.status === "accepted" ? " · принята 01-08-2026" : t.status === "returned" ? " · возвратов: 1" : "";
+  const res = t => ["on_review","accepted","returned"].includes(t.status) && isAbd ? `<p class="mt2 t-sm c-body">Результат: ${RESULT}</p>` : "";
+  const live = p.tasks.filter(t => t.status !== "cancelled").length;
+  return `<div style="min-height:100dvh;background:var(--bg);padding:40px 16px 64px"><div style="max-width:860px;margin:0 auto">
+    <div class="row between"><a class="back" href="#${S.backTo || "m.plan"}">${ic("arrow-left")}Назад</a><button class="btn btn-primary btn-sm" style="height:44px;padding:0 18px;font-size:15px" onclick="window.print()">${ic("printer")}Печать или PDF</button></div>
+    <article class="card mt6" style="padding:48px">
+      <p class="eyebrow">Отчёт по плану развития</p>
+      <h1 class="mt3" style="font-size:32px;line-height:1.2;max-width:600px">${p.title}</h1>
+      <p class="mt3 c-body">${m.name}, ${m.position.charAt(0).toLocaleLowerCase("ru") + m.position.slice(1)}</p><p class="t-sm c-sec">${coName(m.company)}</p>
+      <span class="logo-mark mt5" style="height:30px;width:97px"></span>
+      <div style="border-top:1px solid var(--border);margin-top:24px;padding-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px 32px">
+        <div><p class="t-sm c-sec">Период</p><p class="t-sm c-text tab">${fmtDate(p.start)} – ${fmtDate(p.end)}</p></div><div><p class="t-sm c-sec">Состояние</p><p class="t-sm c-text">${p.status === "active" ? "Запущен" : "Черновик"}</p></div>
+        <div><p class="t-sm c-sec">Куратор</p><p class="t-sm c-text">${cur.name}</p></div><div><p class="t-sm c-sec">Отчёт составлен</p><p class="t-sm c-text tab">30-09-2026</p></div>
+      </div>
+      <h2 class="mt8" style="font-size:24px">Выполнение</h2>
+      <p class="mt3 c-body tab">Принято <span class="serif c-text" style="font-size:24px">${p.done}</span> из ${live} задач · ${p.percent}%</p>
+      <div class="bar" style="height:6px"><i style="transform:scaleX(${p.percent/100})"></i></div>
+      <p class="mt3 t-xs c-sec tab">${isAbd ? "практика 100%, наставничество 0%, обучение 0% · отменено задач: 1 · возвратов на доработку: 1" : "практика 100%, наставничество 0%, обучение 0%"}</p>
+      <h2 class="mt8" style="font-size:24px">Оценка</h2>
+      <p class="mt3 t-sm c-sec">План составлен по оценке от 01-12-2025 (${isAbd ? PROVIDER : "Внешний провайдер"}). Повторной оценки после неё ещё нет — сравнение «было и стало» появится, когда её внесут.</p>
+      <h2 class="mt8" style="font-size:24px">Задачи по компетенциям</h2>
+      ${groups.map(g => `<section class="mt6"><p class="row fw5 c-text" style="gap:8px"><span class="cdot" style="background:${g.c.color}"></span>${g.c.name}</p>${g.items.map(t => `<div class="mt5"><div class="row between" style="align-items:flex-start;gap:16px"><p class="fw6 c-text${t.status === "cancelled" ? "" : ""}" style="max-width:600px">${t.title}</p>${StatusBadge(t.status, "shrink0")}</div><p class="mt1 t-xs c-muted tab">Практика · срок ${fmtDate(t.deadline)}${extra(t)}</p><p class="mt2 t-sm c-sec">Ожидаемый результат: ${EXPECT}</p>${res(t)}${t.status === "cancelled" ? `<p class="mt2 t-sm c-sec">Причина отмены: Потеряла актуальность после реорганизации</p>` : ""}</div>`).join("")}</section>`).join("")}
+      <h2 class="mt8" style="font-size:24px">Итог HR</h2><p class="mt2 c-body">План ещё не завершён.</p>
+      <h2 class="mt8" style="font-size:24px">Заключение куратора</h2><p class="mt2 c-body">Куратор ещё не написал заключение.</p>
+    </article></div></div>`;
+}
+
+/* ===================== Смена пароля (/password) ===================== */
+function PasswordPage(){
+  return `<main style="min-height:100dvh;display:flex;flex-direction:column;background:var(--bg);padding:32px 24px"><span class="logo-mark" style="height:28px;width:91px;margin-left:24px"></span>
+  <div style="margin:0 auto;display:flex;width:100%;max-width:420px;flex:1;flex-direction:column;justify-content:center;padding:48px 0">
+    <h1 class="fade-up" style="font-size:48px;line-height:1.2">Смена пароля</h1>
+    <p class="fade-up mt2 c-sec" style="animation-delay:.06s">Новый пароль — не короче 10 символов. Другие устройства после смены выйдут из системы.</p>
+    <form id="pwForm" novalidate class="col" style="margin-top:40px;gap:24px">
+      ${[["pw1","Текущий пароль","current-password"],["pw2","Новый пароль","new-password"],["pw3","Новый пароль ещё раз","new-password"]].map(([id, l, ac], i) => `<div class="field fade-up" style="animation-delay:${.12 + i*.06}s"><label class="label" for="${id}">${l}</label><input id="${id}" class="inp" type="password" autocomplete="${ac}"><p class="err" hidden></p></div>`).join("")}
+      <div class="fade-up" style="padding-top:8px;animation-delay:.3s"><button type="submit" class="btn btn-primary btn-lg" style="width:100%">Сохранить пароль</button></div>
+    </form>
+    <p class="fade-up mt8 t-sm c-muted" style="animation-delay:.36s">Не ваша учётная запись? <a href="#login" class="c-accent">Выйти</a></p>
+  </div><p class="t-xs c-muted" style="text-align:center">© ООО «Авесто Групп» · только для сотрудников</p></main>`;
+}
+function bindPassword(){
+  const f = document.getElementById("pwForm"); if (!f) return;
+  document.getElementById("pw1").focus();
+  f.onsubmit = e => { e.preventDefault(); const [a, b, c] = ["pw1","pw2","pw3"].map(id => document.getElementById(id)); const errs = [a.value ? "" : "Введите текущий пароль", b.value.length >= 10 ? "" : "Не короче 10 символов", c.value === b.value && c.value ? "" : "Пароли не совпадают"];
+    [a, b, c].forEach((el, i) => { const er = el.nextElementSibling; er.hidden = !errs[i]; er.textContent = errs[i]; el.setAttribute("aria-invalid", !!errs[i]); });
+    if (errs.every(x => !x)) { toast("Пароль изменён"); go(S.backTo || "m.plan"); } };
+}
+
+/* ===================== Рендер ===================== */
+function countUp(root){
+  root.querySelectorAll("[data-count]").forEach(el => { const v = +el.dataset.count, start = performance.now(); if (matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = v; return; } const tick = now => { const t = Math.min(1, (now - start)/600); el.textContent = Math.round(v * (1 - Math.pow(1 - t, 3))); if (t < 1) requestAnimationFrame(tick); }; requestAnimationFrame(tick); });
+}
+function render(keep){
+  closeOverlays();
+  const r = route(), app = document.getElementById("app");
+  if (r.area === "rep") { document.body.classList.remove("has-bottom"); app.innerHTML = ReportPage(r.page); document.title = "Отчёт по плану · Авесто ИПР"; lucide.createIcons(); return; }
+  if (r.area === "pw") { document.body.classList.remove("has-bottom"); app.innerHTML = PasswordPage(); document.title = "Смена пароля · Авесто ИПР"; lucide.createIcons(); bindPassword(); return; }
+  if (r.area === "login" || !["a","c","m"].includes(r.area)) {
+    document.body.classList.remove("has-bottom"); app.innerHTML = LoginPage(); document.title = "Вход · Авесто ИПР";
+    lucide.createIcons(); bindLogin(); return;
+  }
+  const want = r.area === "a" ? (S.role === "sa" ? "sa" : "hr") : r.area === "c" ? "cur" : "mgr";
+  S.role = want; S.user = USERS[want];
+  if (r.area === "a" && r.page === "hr" && S.role !== "sa") { S.role = "sa"; S.user = USERS.sa; }
+  const P = {
+    a: { dashboard:AdminDashboard, analytics:Analytics, review:AdminReview, deadlines:Deadlines, managers:ManagersPage, manager:() => ManagerCard(r.id, r.tab, "a"), plan:() => PlanPage(r.id), curators:CuratorsPage, curator:() => CuratorPage(r.id), assessments:AssessmentsPage, library:LibraryPage, companies:CompaniesPage, settings:SettingsPage, audit:AuditPage, hr:HrPage, hrp:() => HrPerson(r.id) },
+    c: { wards:CuratorWards, ward:() => ManagerCard(r.id, r.tab, "c"), review:CuratorReview, notifications:() => NotificationsPage("cur") },
+    m: { plan:MyPlan, task:() => MyTask(r.id), reports:MyReports, notifications:() => NotificationsPage("mgr"), profile:MyProfile },
+  };
+  const fn = P[r.area][r.page] ?? Object.values(P[r.area])[0];
+  if (!P[r.area][r.page]) r.page = Object.keys(P[r.area])[0];
+  app.innerHTML = Shell(fn(), r);
+  if (keep) app.querySelector(".inner")?.classList.remove("page");
+  document.body.classList.toggle("has-bottom", r.area === "m");
+  const t = navItems().find(n => n[0] === activeOf(r.page)); document.title = `${t ? t[1] : "Авесто ИПР"} · Авесто ИПР`;
+  lucide.createIcons();
+  if (!keep) countUp(app); else app.querySelectorAll("[data-count]").forEach(el => el.textContent = el.dataset.count);
+}
+render();
+</script>
+
+</body>
+</html>
