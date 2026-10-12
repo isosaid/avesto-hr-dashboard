@@ -333,7 +333,7 @@ const lucide = { createIcons(opts = {}) {
 /* ===================== Подключение к базе (Supabase) =====================
    Пустые url/anonKey — демо-режим: вход по любому паролю, кабинет по email.
    Заполненные — настоящий вход: пароли проверяет Supabase Auth, роль берётся из таблицы ipr_profiles. */
-const SUPABASE = { url: "", anonKey: "" };
+const SUPABASE = { url: "https://ttllbnynbaxzmfoiywhj.supabase.co", anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0bGxibnluYmF4em1mb2l5d2hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxMDg1NjUsImV4cCI6MjEwMzY4NDU2NX0.nkxisE4FUP-gjDGu_LX0ZYTVVP9gKXRjfty1SZzo3bQ" };
 const DB = Boolean(SUPABASE.url && SUPABASE.anonKey);
 const ROLE_OF = { hr_admin:"hr", superadmin:"sa", curator:"cur", manager:"mgr" };
 const HOME = { hr:"a.dashboard", sa:"a.dashboard", cur:"c.wards", mgr:"m.plan" };
