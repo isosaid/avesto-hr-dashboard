@@ -14,11 +14,20 @@ create table if not exists public.ipr_profiles (
   created_at timestamptz not null default now()
 );
 
--- 2. Доступ: пользователь видит только свою строку и может лишь снять флаг «сменить пароль».
+-- Телефон для «Личных данных» (добавляется и в уже созданную таблицу).
+alter table public.ipr_profiles add column if not exists phone text;
+do $$ begin
+  alter table public.ipr_profiles add constraint ipr_profiles_phone_check check (phone is null or phone ~ '^\+?[0-9]{7,15}$');
+exception when duplicate_object then null; end $$;
+do $$ begin
+  alter table public.ipr_profiles add constraint ipr_profiles_full_name_check check (char_length(btrim(full_name)) between 2 and 200);
+exception when duplicate_object then null; end $$;
+
+-- 2. Доступ: пользователь видит только свою строку; менять может ФИО, телефон и снять флаг «сменить пароль».
 alter table public.ipr_profiles enable row level security;
 revoke all on public.ipr_profiles from anon, authenticated;
 grant select on public.ipr_profiles to authenticated;
-grant update (must_change_password) on public.ipr_profiles to authenticated;
+grant update (full_name, phone, must_change_password) on public.ipr_profiles to authenticated;
 
 drop policy if exists "ipr: читать свой профиль" on public.ipr_profiles;
 create policy "ipr: читать свой профиль" on public.ipr_profiles
@@ -26,7 +35,8 @@ create policy "ipr: читать свой профиль" on public.ipr_profiles
   using (id = (select auth.uid()));
 
 drop policy if exists "ipr: снять флаг смены пароля" on public.ipr_profiles;
-create policy "ipr: снять флаг смены пароля" on public.ipr_profiles
+drop policy if exists "ipr: менять свой профиль" on public.ipr_profiles;
+create policy "ipr: менять свой профиль" on public.ipr_profiles
   for update to authenticated
   using (id = (select auth.uid()))
   with check (id = (select auth.uid()) and must_change_password = false);
@@ -44,7 +54,7 @@ from (values
 ) as v (email, full_name, role, must_change)
 join auth.users u on lower(u.email) = v.email
 on conflict (id) do update
-  set email = excluded.email, full_name = excluded.full_name, role = excluded.role;
+  set email = excluded.email, role = excluded.role;  -- ФИО и телефон не трогаем: их меняет сам пользователь
 
--- Проверка: должно вернуть 4 строки.
-select email, role, full_name, must_change_password from public.ipr_profiles order by role;
+-- Проверка: по строке на каждого созданного пользователя.
+select email, role, full_name, phone, must_change_password from public.ipr_profiles order by role;
