@@ -1,6 +1,6 @@
 -- Авесто ИПР — учётные записи с паролями.
 -- Supabase → SQL Editor → вставить целиком → Run.
--- Создаёт недостающих пользователей и задаёт пароль всем восьми (у существующих пароль заменяется).
+-- Создаёт недостающих пользователей и задаёт пароль всем тринадцати (у существующих пароль заменяется).
 -- Можно запускать повторно.
 
 do $$
@@ -16,6 +16,11 @@ begin
     ('curator04@audit.test',  'Kurator4-6VZs-k1OA-2026', 'Куратор Қурбонов 4', 'curator'),
     ('curator05@audit.test',  'Kurator5-AfhP-YuLq-2026', 'Куратор Қурбонов 5', 'curator'),
     ('long@audit.test',       'Rukovod-91g3-0pvM-2026', 'Абдураҳмонзода Ҷамшеджон Ғуломқодирович', 'manager'),
+    ('manager1@audit.test',   'Rukovod1-wWDX-SNZ7-2026', 'Руководитель Ғаниев 1', 'manager'),
+    ('manager2@audit.test',   'Rukovod2-O6yw-LCl9-2026', 'Руководитель Ғаниев 2', 'manager'),
+    ('manager3@audit.test',   'Rukovod3-BSBz-X17x-2026', 'Руководитель Ғаниев 3', 'manager'),
+    ('manager4@audit.test',   'Rukovod4-RMGD-jOCX-2026', 'Руководитель Ғаниев 4', 'manager'),
+    ('manager5@audit.test',   'Rukovod5-Qvb6-OG6N-2026', 'Руководитель Ғаниев 5', 'manager'),
     ('superadmin@audit.test', 'Super-YkfX-b2hI-2026',   'Суперадмин Аудит',                        'superadmin')
   ) as v (email, pw, full_name, role)
   loop
@@ -46,7 +51,7 @@ begin
   end loop;
 end $$;
 
--- Проверка: 8 строк, у всех email подтверждён.
+-- Проверка: 13 строк, у всех email подтверждён.
 select p.email, p.role, p.full_name, u.email_confirmed_at is not null as confirmed
 from public.ipr_profiles p join auth.users u on u.id = p.id
 order by p.role;

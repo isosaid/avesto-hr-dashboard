@@ -615,8 +615,14 @@ function navItems(){
 }
 /* Куратор, вошедший в систему: свои подопечные и своя очередь проверки. */
 function myCur(){ return CURATORS.find(c => c.email === S.user?.email) || CURATORS[0]; }
-function demoUser(role){ const c = role === "cur" && CURATORS.find(c => c.email === S.demoEmail); return withProfile(c ? { ...USERS.cur, name: c.name, email: c.email } : USERS[role], role); }
-function unread(role){ if (S.readAll[role]) return 0; if (role === "cur") return 64; return (NOTIF[role] ?? []).filter(n => !n.read).length; }
+function myMgr(){ return MANAGERS.find(m => m.email === S.user?.email) || MANAGERS[0]; }
+function demoUser(role){
+  const c = role === "cur" && CURATORS.find(c => c.email === S.demoEmail), g = role === "mgr" && MANAGERS.find(m => m.email === S.demoEmail);
+  const base = c ? { ...USERS.cur, name: c.name, email: c.email } : g ? { ...USERS.mgr, name: g.name, email: g.email } : USERS[role];
+  return withProfile(base, role);
+}
+function notifs(role){ return role === "mgr" && myMgr().id !== "abd" ? [] : (NOTIF[role] ?? []); }
+function unread(role){ if (S.readAll[role]) return 0; if (role === "cur") return 64; return notifs(role).filter(n => !n.read).length; }
 function badges(){
   if (S.user.area === "a") return { deadlines: DEADLINE_PENDING.length };
   if (S.user.area === "c") return { review: queueFor(myCur().n).length, notifications: unread("cur") };
@@ -684,7 +690,7 @@ function NotifBody(n, size="sm"){
   return `<span class="row grow" style="align-items:flex-start;gap:12px"><span class="row shrink0" style="justify-content:center;margin-top:2px;width:${size === "md" ? 36 : 32}px;height:${size === "md" ? 36 : 32}px;border-radius:50%;color:${k.color};background:color-mix(in srgb,${k.color} 12%,transparent)">${ic(k.icon)}</span><span class="grow"><span class="row wrap between" style="align-items:baseline;gap:0 12px"><span class="fw7 ${size === "md" ? "t-base" : "t-sm"}" style="color:${k.color}">${k.label}</span><span class="t-xs c-muted tab">${fmtDT(n.at)}</span></span><span class="mt1" style="display:block;line-height:1.45;font-size:${size === "md" ? 15 : 13}px;color:${n.read || S.readAll[S.role] ? "var(--text-secondary)" : "var(--text)"}">${esc(n.text)}</span></span></span>`;
 }
 function openBell(btn){
-  const list = NOTIF[S.role] ?? [], u = unread(S.role), all = S.user.area === "m" ? "m.notifications" : S.user.area === "c" ? "c.notifications" : "a.review";
+  const list = notifs(S.role), u = unread(S.role), all = S.user.area === "m" ? "m.notifications" : S.user.area === "c" ? "c.notifications" : "a.review";
   popAt(btn, `<div class="row between" style="padding:8px 12px"><p class="serif t-lg c-text">Уведомления</p>${u ? `<button class="btn btn-text btn-sm" onclick="readAll()">Прочитать все</button>` : ""}</div>${list.length ? `<ul class="col" style="gap:4px;max-height:420px;overflow-y:auto">${list.slice(0, 30).map(n => `<li><a href="#${all}" onclick="closeMenu()" class="row" style="position:relative;align-items:flex-start;border-radius:8px;padding:12px 28px 12px 12px;${!n.read && !S.readAll[S.role] ? "background:rgba(245,244,242,.7)" : ""}">${NotifBody(n)}${!n.read && !S.readAll[S.role] ? '<span style="position:absolute;right:10px;top:18px;width:8px;height:8px;border-radius:50%;background:var(--accent)"></span>' : ""}</a></li>`).join("")}</ul>` : `<p class="t-sm c-muted" style="padding:24px 12px;text-align:center">Пока ничего нет</p>`}<div style="border-top:1px solid var(--border);padding:8px 12px 0"><a href="#${all}" onclick="closeMenu()" class="t-sm c-accent" style="display:block;padding:8px 0">Все уведомления</a></div>`, 400);
 }
 function readAll(){ S.readAll[S.role] = true; closeMenu(); toast("Все прочитаны"); rerender(); }
@@ -1011,7 +1017,7 @@ function normPhone(v){ v = v.trim(); if (!v) return ""; return (v.startsWith("+"
 
 function openProfileSheet(){
   const u = S.user, id = profId();
-  const job = S.role === "mgr" ? [ABD_POS, LONG_CO] : S.role === "cur" ? [myCur().position] : [];
+  const job = S.role === "mgr" ? [myMgr().position, coName(myMgr().company)] : S.role === "cur" ? [myCur().position] : [];
   const F = (name, label, attrs, hint = "", opt = false) => `<div class="field"${name === "current" ? ' id="pfCur" hidden' : ""}><label class="label" for="pf-${name}">${label}${opt ? '<span class="opt">необязательно</span>' : ""}</label><input class="inp" id="pf-${name}" name="${name}" ${attrs}>${hint ? `<p class="hint">${hint}</p>` : ""}<p class="err" data-err="${name}" role="alert" hidden></p></div>`;
   const el = sheetOpen(`<div style="padding:24px 32px 32px"><div class="row between"><p class="eyebrow">${ROLE_TITLE[S.role]}</p><button type="button" class="round-btn" data-x aria-label="Закрыть">${ic("x")}</button></div>
     <h2 class="mt1" style="font-size:24px">Личные данные</h2>
@@ -1352,11 +1358,33 @@ function AuditPage(){
 
 /* ===================== Куратор: уведомления; руководитель ===================== */
 function NotificationsPage(role){
-  const list = NOTIF[role], u = unread(role);
+  const list = notifs(role), u = unread(role);
   return PageTitle("Уведомления") + (u ? `<div class="row end mt6"><button class="btn btn-secondary btn-sm" onclick="readAll()">Прочитать все</button></div>` : "") +
   (list.length ? `<ul class="col mt4" style="gap:8px">${list.map(n => `<li><a href="#${role === "mgr" ? "m.plan" : "c.review"}" class="card inter p4 row" style="align-items:flex-start;gap:12px;${!n.read && !S.readAll[role] ? "border-left:2px solid var(--accent)" : ""}">${NotifBody(n, "md")}</a></li>`).join("")}</ul>` : `<div class="card mt6">${Empty("Уведомлений пока нет", "Здесь появятся сроки, решения куратора и комментарии.")}</div>`);
 }
-function MyPlan(){
+function MyPlan(){ const me = myMgr(); return me.id === "abd" ? MyPlanAbd() : MyPlanFor(me); }
+/* Свой план любого руководителя — те же блоки и правила подсчёта, что в исходнике (managerSummary). */
+function MyPlanFor(m){
+  const p = planOf(m), a = asmOf(m), sc = a ? a.scores : [], cur = curById(m.curator), active = p.status === "active";
+  const tasks = active ? p.tasks.filter(t => t.status !== "cancelled") : [];
+  const mine = tasks.filter(t => ["assigned","in_progress","returned"].includes(t.status));
+  const done = tasks.filter(t => t.status === "accepted").length, total = tasks.length, percent = total ? Math.round(done / total * 100) : 0;
+  const ret = mine.filter(t => t.status === "returned").length, onRev = tasks.filter(t => t.status === "on_review").length;
+  const over = mine.filter(t => t.dl.kind === "overdue").length, soon = mine.filter(t => t.dl.kind === "soon").length;
+  const next = mine.slice().sort((x, y) => x.deadline.localeCompare(y.deadline)).slice(0, 3);
+  const growth = COMPS.map((c, i) => [c, sc[i]]).filter(z => z[1] != null && z[1] < 3).sort((x, y) => x[1] - y[1]);
+  const noPlan = "Плана пока нет", T = ["задача","задачи","задач"];
+  const nextCard = active ? `<div class="card p56" style="min-width:0"><p class="eyebrow">Ближайшие сроки</p>${next.length ? `<ul class="mt2 divide">${next.map(t => `<li><a href="#m.task.${t.id}" class="row between" style="min-height:56px;gap:12px;padding:8px 0"><span class="grow" style="min-width:0"><span class="fw5 c-text trunc" style="display:block">${t.title}</span>${DL(t)}</span>${StatusBadge(t.status, "shrink0")}</a></li>`).join("")}</ul>${mine.length > next.length ? `<p class="mt2 t-sm c-muted tab">И ещё ${mine.length - next.length} ${plural(mine.length - next.length, T)} ниже в плане.</p>` : ""}` : `<p class="mt3 c-body">${onRev ? "Все задачи у куратора — ждите решения." : total ? "Все задачи приняты." : "В плане пока нет задач."}</p>`}</div>` : "";
+  const asmCard = `<div class="card p56" style="min-width:0"><p class="eyebrow">Моя оценка</p>${a ? `<p class="mt2 c-body tab">Средний балл <span class="serif c-text" style="font-size:24px">${fmtScore(asmAvg(sc))}</span> из 5 · оценка от ${fmtDate(a.date)}</p><p class="mt1 t-sm c-sec">${growth.length ? `Зоны роста: ${growth.slice(0, 3).map(z => z[0].name.toLocaleLowerCase("ru")).join(", ")}${growth.length > 3 ? ` и ещё ${growth.length - 3}` : ""}.` : "Все компетенции на уровне или выше границы зоны роста."}</p>` : `<p class="mt2 c-body">Внешней оценки пока нет.</p>`}<p class="mt1 t-sm c-sec">${S.self ? "Самооценка пройдена 12-10-2026." : "Самооценка ещё не пройдена — её можно пройти в профиле."}</p><a href="#m.profile" class="row c-accent mt3" style="min-height:44px;gap:8px;display:inline-flex">${S.self ? "Открыть профиль" : "Пройти самооценку"}${ic("arrow-right")}</a></div>`;
+  const plan = active ? `<div class="card p56 mt8"><div class="row wrap between" style="align-items:flex-end;gap:16px"><div><p class="eyebrow">План развития</p><h2 class="mt1" style="font-size:24px;max-width:460px">${p.title}</h2><p class="mt1 t-sm c-sec tab">${fmtDate(p.start)} – ${fmtDate(p.end)}</p></div><div style="width:100%;max-width:320px">${Progress(done, total, percent)}</div></div></div>
+  <div class="row end mt4"><button class="btn btn-secondary btn-sm" onclick="toast('Файл .ics со сроками скачивается в обычном браузере')">${ic("calendar-plus")}Сроки в календарь</button></div>
+  <div class="mt4">${TaskGroups(p.tasks, "m.task")}</div>` : `<div class="card mt8">${Empty("Плана развития пока нет", "Когда HR-отдел запустит ваш индивидуальный план, задачи появятся здесь.")}</div>`;
+  return PageTitle("Мой план", `${coName(m.company)} · ${m.position}`) + `<section class="col mt8" style="gap:16px" aria-label="Сводка"><div class="tiles four">${StatTile("Выполнение", percent, active ? `Принято ${done} из ${total}` : noPlan, "%")}${StatTile("Нужно сделать", mine.length, active ? (ret ? `На доработке: ${ret}` : "Ждут вас") : noPlan)}${StatTile("На проверке", onRev, "У куратора")}${StatTile("Просрочено", over, soon ? `Скоро срок: ${soon}` : "Задач с истёкшим сроком", "", "overdue")}</div>
+  <div class="${active ? "grid2 half" : "col"}" style="gap:16px">${nextCard}${asmCard}</div></section>
+  ${plan}
+  <div class="card p56 mt6"><p class="eyebrow">Ваш куратор</p><p class="mt2 serif c-text" style="font-size:20px">${cur.name}</p><p class="mt1 t-sm c-sec">${cur.position}</p></div>`;
+}
+function MyPlanAbd(){
   const m = mgrById("abd"), p = planOf(m), sc = scoresOf(m) || [];
   const next = ["t3","t2","t5"].map(id => ABD_TASKS.find(t => t.id === id));
   const growth = COMPS.map((c, i) => [c, sc[i]]).filter(z => z[1] != null && z[1] < 3).sort((a, b) => a[1] - b[1]);
@@ -1368,13 +1396,23 @@ function MyPlan(){
   <div class="mt4">${TaskGroups(p.tasks, "m.task")}</div>
   <div class="card p56 mt6"><p class="eyebrow">Ваш куратор</p><p class="mt2 serif c-text" style="font-size:20px">Куратор Қурбонов 1</p><p class="mt1 t-sm c-sec">Заместитель директора</p></div>`;
 }
-function MyReports(){
+function MyReports(){ const me = myMgr(); return me.id === "abd" ? MyReportsAbd() : MyReportsFor(me); }
+function MyReportsFor(m){
+  const p = planOf(m), cur = curById(m.curator);
+  const items = p.status === "active" ? p.tasks.filter(t => ["on_review","accepted","returned"].includes(t.status)) : [];
+  const head = PageTitle("Мои отчёты", "Задачи, которые вы отправляли куратору на проверку, и его решения.");
+  if (!items.length) return head + `<div class="card mt6">${Empty("Отчётов пока нет", "Когда вы отправите задачу на проверку куратору, она появится здесь вместе с его решением.")}</div>`;
+  const onRev = items.filter(t => t.status === "on_review").length;
+  return head + `<p class="mt6 t-sm c-muted tab">${items.length} ${plural(items.length, ["задача","задачи","задач"])} · на проверке ${onRev} · куратор ${cur.name}</p><ul class="col mt4" style="gap:12px">${items.map(t => { const sent = shiftD(t.deadline, -5), ok = t.status === "accepted";
+    return `<li><a href="#m.task.${t.id}" class="card inter p4s5" style="display:block"><div class="row between" style="align-items:flex-start;gap:8px"><p class="grow fw5 c-text">${t.title}</p>${StatusBadge(t.status)}</div><p class="row wrap mt1 t-sm c-sec" style="gap:4px 12px">${CTag(t.comp)}<span class="c-muted">${p.title}</span></p><p class="row wrap mt3 t-sm c-muted tab" style="gap:4px 12px"><span>Отправлено ${String(sent.getDate()).padStart(2, "0")}-${String(sent.getMonth() + 1).padStart(2, "0")}-${sent.getFullYear()}</span></p>${t.status === "on_review" ? `<p class="mt3 t-sm c-sec">Куратор ещё не ответил.</p>` : `<div class="mt3" style="border-radius:12px;background:var(--surface-muted);padding:12px"><p class="t-sm c-sec"><span class="fw5" style="color:${ok ? "var(--accent-strong)" : "var(--danger)"}">${ok ? "Принято" : "Возвращено на доработку"}</span><span class="c-muted"> · ${cur.name}</span></p></div>`}</a></li>`; }).join("")}</ul>`;
+}
+function MyReportsAbd(){
   const C = Array(6).fill("Комментарий куратора: доработайте раздел с показателями.").join(" ");
   const at = new Date(2026,8,27,16,13), dec = new Date(2026,8,30,16,13);
   const items = [{ t:ABD_TASKS[4], files:2, dec:{ ok:false } }, { t:ABD_TASKS[3], files:2, dec:{ ok:true } }, { t:ABD_TASKS[0], files:10, dec:null }];
   return PageTitle("Мои отчёты", "Задачи, которые вы отправляли куратору на проверку, и его решения.") + `<p class="mt6 t-sm c-muted tab">3 задачи · на проверке 1 · куратор Куратор Қурбонов 1</p><ul class="col mt4" style="gap:12px">${items.map(i => `<li><a href="#m.task.${i.t.id}" class="card inter p4s5" style="display:block"><div class="row between" style="align-items:flex-start;gap:8px"><p class="grow fw5 c-text">${i.t.title}</p>${StatusBadge(i.dec ? (i.dec.ok ? "accepted" : "returned") : "on_review")}</div><p class="row wrap mt1 t-sm c-sec" style="gap:4px 12px">${CTag(i.t.comp)}<span class="c-muted">${PLAN_TITLE_ABD}</span></p><p class="row wrap mt3 t-sm c-muted tab" style="gap:4px 12px"><span>Отправлено ${fmtDT(at)}</span><span class="row" style="gap:4px">${ic("paperclip")}${i.files}</span></p>${i.dec ? `<div class="mt3" style="border-radius:12px;background:var(--surface-muted);padding:12px"><p class="t-sm c-sec"><span class="fw5" style="color:${i.dec.ok ? "var(--accent-strong)" : "var(--danger)"}">${i.dec.ok ? "Принято" : "Возвращено на доработку"}</span><span class="c-muted tab"> · Куратор Қурбонов 1 · ${fmtDT(dec)}</span></p><p class="mt1 t-sm c-body">${C}</p></div>` : `<p class="mt3 t-sm c-sec">Куратор ещё не ответил.</p>`}</a></li>`).join("")}</ul>`;
 }
-function MyProfile(){ return PageTitle("Мой профиль", `${ABD_POS} · ${LONG_CO}`) + `<div class="mt8">${AssessmentProfile(mgrById("abd"), { canEdit:false, canSelf:true })}</div>`; }
+function MyProfile(){ const me = myMgr(), sub = me.id === "abd" ? `${ABD_POS} · ${LONG_CO}` : `${me.position} · ${coName(me.company)}`; return PageTitle("Мой профиль", sub) + `<div class="mt8">${AssessmentProfile(me, { canEdit:false, canSelf:true })}</div>`; }
 
 
 /* ===================== Задача руководителя (my/tasks/[id]) ===================== */
@@ -1384,20 +1422,22 @@ const RESULT = Array(22).fill("Результат работы: внедрена
 const STEP = "согласовать с финансовым отделом филиала Кӯрғонтеппа и подготовить сводную таблицу показателей";
 function Section(title, body, extra=""){ return `<div class="card p56 mt5"${extra}><p class="eyebrow">${title}</p>${body}</div>`; }
 function MyTask(id){
-  const t = ABD_TASKS.find(x => x.id === id) ?? ABD_TASKS[1];
+  const me = myMgr(), cur = curById(me.curator), mineT = me.id === "abd" ? ABD_TASKS : planOf(me).tasks;
+  const t = mineT.find(x => x.id === id) ?? (me.id === "abd" ? ABD_TASKS[1] : null);
+  if (!t) return Back("m.plan", "К плану") + `<div class="card mt6">${Empty("Не найдено", "Такой задачи нет в вашем плане.")}</div>`;
   const big = t.id === "t1" || t.id === "t2", n = big ? 30 : 3;
   const done = i => t.status === "on_review" || t.status === "accepted" ? true : big ? i % 2 === 1 : i === 0;
   const steps = Array.from({length:n}, (_, i) => { const k = "st-" + t.id + i, on = S.sel[k] ?? done(i); return `<li><label class="row" style="min-height:44px;gap:12px;cursor:pointer;align-items:center"><input type="checkbox" class="check" ${on ? "checked" : ""} ${["on_review","accepted","cancelled"].includes(t.status) ? "disabled" : ""} onchange="S.sel['${k}']=this.checked;rerender()"><span class="t-base" style="${on ? "text-decoration:line-through;color:var(--text-muted)" : "color:var(--text-body)"}">Шаг ${i+1}: ${STEP}</span></label></li>`; }).join("");
   const canWork = ["assigned","in_progress","returned"].includes(t.status);
   const files = Array.from({length:10}, (_, i) => (i % 3 === 2) ? `<a class="att" href="#m.task.${t.id}">${ic("link-2")}<span class="grow">Видеозапись совещания с руководителями филиалов</span>${ic("external-link")}</a>` : `<a class="att" href="#m.task.${t.id}">${ic("file-text")}<span class="grow trunc">Протокол_совещания_руководителей_филиалов_Ҳисор_и_Ғончӣ_№${i+1}_от_15-09-2026_финальная_версия.pdf</span><span class="t-xs c-muted tab shrink0">3,3 МБ</span></a>`).join("");
-  const report = `<p class="mt1 t-sm c-muted tab">Абдураҳмонзода Ҷамшеджон Ғуломқодирович · 27-09-2026, 16:13</p><p class="mt3 c-body">${RESULT}</p><p class="eyebrow mt5">Вложения</p><div class="col mt2" style="gap:8px">${files}</div>`;
+  const report = `<p class="mt1 t-sm c-muted tab">${me.name} · 27-09-2026, 16:13</p><p class="mt3 c-body">${RESULT}</p><p class="eyebrow mt5">Вложения</p><div class="col mt2" style="gap:8px">${files}</div>`;
   const draft = S.q["res-" + t.id] ?? "";
   let parts = Section("Зачем эта задача", `<p class="mt2 c-body">${DESC}</p><p class="eyebrow mt5">Ожидаемый результат</p><p class="mt2 c-body">${EXPECT}</p><p class="eyebrow mt5">Материалы</p><a class="att mt2" href="#m.task.${t.id}">${ic("link-2")}<span class="grow">Курс «Финансовое лидерство для руководителей дочерних компаний»</span>${ic("external-link")}</a>`);
   if (t.id === "t2") parts += Section("Срок задачи", `<p class="mt1 c-text tab">до ${fmtDate(t.deadline)}</p>${S.sel.withdrawn ? `<div class="row end mt4"><button class="btn btn-secondary btn-sm" onclick="toast('Запрос на перенос срока отправлен в HR-отдел')">${ic("calendar-clock")}Попросить перенести срок</button></div>` : `<div class="mt4" style="border-radius:12px;background:var(--surface-muted);padding:16px"><div class="row wrap" style="gap:8px 12px"><span class="fw5 c-text tab">03-10-2026 → 15-11-2026</span><span class="badge" style="background:var(--surface);color:var(--text-secondary)"><span class="dot"></span>Ждёт решения HR</span></div><p class="mt1 t-xs c-muted tab">Запрошено 30-09-2026, 16:13</p><p class="mt2 c-body">${ABD_REASON}</p></div><div class="row end mt3"><button class="btn btn-text btn-sm" onclick="dialog('Отозвать запрос?','Запрос на перенос срока будет снят. Срок задачи останется 03-10-2026.','Отозвать','danger',()=>{S.sel.withdrawn=true;toast('Запрос отозван');rerender()})">Отозвать запрос</button></div>`}`);
   parts += Section("Чек-лист", `<ul class="col mt2" style="gap:2px">${steps}</ul>`);
-  if (t.status === "on_review") parts += Section("На проверке", `<p class="mt2 c-body">Отчёт у куратора — Куратор Қурбонов 1. После решения вы получите уведомление.</p>`) + Section("Отчёт", report);
-  if (t.status === "accepted") parts += Section("Принято", `<p class="mt2 c-body">Куратор Қурбонов 1 принял задачу 30-09-2026, 16:13.</p>`) + Section("Отчёт", report);
-  if (t.status === "returned") parts += Section("На доработке", `<p class="mt2 c-body">${Array(6).fill("Комментарий куратора: доработайте раздел с показателями.").join(" ")}</p><p class="mt2 t-sm c-muted tab">Куратор Қурбонов 1 · 30-09-2026, 16:13</p>`);
+  if (t.status === "on_review") parts += Section("На проверке", `<p class="mt2 c-body">Отчёт у куратора — ${cur.name}. После решения вы получите уведомление.</p>`) + Section("Отчёт", report);
+  if (t.status === "accepted") parts += Section("Принято", `<p class="mt2 c-body">${cur.name} принял задачу 30-09-2026, 16:13.</p>`) + Section("Отчёт", report);
+  if (t.status === "returned") parts += Section("На доработке", `<p class="mt2 c-body">${Array(6).fill("Комментарий куратора: доработайте раздел с показателями.").join(" ")}</p><p class="mt2 t-sm c-muted tab">${cur.name} · 30-09-2026, 16:13</p>`);
   if (t.status === "cancelled") parts += Section("Задача отменена", `<p class="mt2 c-body">Причина отмены: Потеряла актуальность после реорганизации</p>`);
   if (canWork) {
     const allDone = Array.from({length:n}, (_, i) => S.sel["st-" + t.id + i] ?? done(i)).every(Boolean);
