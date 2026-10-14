@@ -551,7 +551,7 @@ const KINDS = {
 const STATUS = { assigned:["Назначена","--st-assigned"], in_progress:["В работе","--st-progress"], on_review:["На проверке","--st-review"], returned:["На доработке","--st-returned"], accepted:["Принята","--st-accepted"], cancelled:["Отменена","--st-cancelled"] };
 
 /* Состояние */
-const S = { role:null, more:{}, page:{}, q:{}, sel:{}, compsOff:{}, cosOff:{}, readAll:{}, self:null, menu:null, competencies:COMPS.slice() };
+const S = { demoEmail: (() => { try { return sessionStorage.getItem("avesto-ipr-demo"); } catch (e) { return null; } })(), role:null, more:{}, page:{}, q:{}, sel:{}, compsOff:{}, cosOff:{}, readAll:{}, self:null, menu:null, competencies:COMPS.slice() };
 
 /* ===================== Мелкие компоненты ===================== */
 function Avatar(name, size="sm", src=""){ return `<span class="av av-${size}" title="${esc(name)}">${src ? `<img src="${src}" alt="">` : `<span>${esc(initials(name))}</span>`}</span>`; }
@@ -613,10 +613,13 @@ function navItems(){
   if (area === "a" && S.role === "sa") { const n = NAV.a.slice(0, -1); n.push(["hr","HR-отдел","shield-check"], NAV.a[NAV.a.length-1]); return n; }
   return NAV[area];
 }
+/* Куратор, вошедший в систему: свои подопечные и своя очередь проверки. */
+function myCur(){ return CURATORS.find(c => c.email === S.user?.email) || CURATORS[0]; }
+function demoUser(role){ const c = role === "cur" && CURATORS.find(c => c.email === S.demoEmail); return withProfile(c ? { ...USERS.cur, name: c.name, email: c.email } : USERS[role], role); }
 function unread(role){ if (S.readAll[role]) return 0; if (role === "cur") return 64; return (NOTIF[role] ?? []).filter(n => !n.read).length; }
 function badges(){
   if (S.user.area === "a") return { deadlines: DEADLINE_PENDING.length };
-  if (S.user.area === "c") return { review: queueFor(1).length, notifications: unread("cur") };
+  if (S.user.area === "c") return { review: queueFor(myCur().n).length, notifications: unread("cur") };
   return { notifications: unread("mgr") };
 }
 
@@ -627,7 +630,7 @@ window.addEventListener("hashchange", () => { S.more = {}; render(); window.scro
 
 function setRole(role){
   if (role === "login" || role === "login-all") { if (DB) signOut(role === "login-all" ? "global" : "local"); S.role = null; go("login"); return; }
-  S.role = role; S.user = withProfile(USERS[role], role);
+  S.role = role; S.user = demoUser(role);
   go(role === "cur" ? "c.wards" : role === "mgr" ? "m.plan" : "a.dashboard");
 }
 
@@ -748,6 +751,7 @@ function bindLogin(){
       });
       return;
     }
+    S.demoEmail = v; try { sessionStorage.setItem("avesto-ipr-demo", v); } catch (e) {}
     setRole(["hr","sa","cur","mgr"].find(k => profOf(k)?.email === v) || (v.includes("curator") ? "cur" : (v.includes("long") || v.includes("manager")) ? "mgr" : v.includes("super") ? "sa" : "hr"));
   };
 }
@@ -801,7 +805,7 @@ function totalsOf(rows){
   return { completion: Math.round(done / total * 100), managers: rows.length, withoutPlan: rows.length - launched.length, review: rows.reduce((s, r) => s + r.review, 0), overdue: rows.reduce((s, r) => s + r.overdue, 0), soon: 3, delayed: rows.reduce((s, r) => s + (r.id === "abd" ? 0 : r.review), 0), risk: rows.filter(r => r.risk === "high").length };
 }
 function AdminDashboard(){ return DashboardView("Дашборд", "Картина по холдингу: выполнение планов, проверка, просрочки.", MANAGERS, totalsOf(MANAGERS), true, "a.manager", "manager"); }
-function CuratorWards(){ const rows = MANAGERS.filter(m => m.curator === "c1"); return DashboardView("Подопечные", "Прогресс, просрочки и задачи, ожидающие вашей проверки.", rows, totalsOf(rows), false, "c.ward", "ward"); }
+function CuratorWards(){ const rows = MANAGERS.filter(m => m.curator === myCur().id); return DashboardView("Подопечные", "Прогресс, просрочки и задачи, ожидающие вашей проверки.", rows, totalsOf(rows), false, "c.ward", "ward"); }
 
 /* ===================== Аналитика ===================== */
 function cellStyle(avg, thr=3, max=5){
@@ -847,7 +851,7 @@ function ReviewQueue(items, mode){
     </div></li>`; }).join("")}</ul>${ShowMore(key, list.length, vis.length, page, ["задачу","задачи","задач"])}`}`;
 }
 function openReview(id, mode){
-  const it = ALL_QUEUE.find(q => q.id === id) ?? queueFor(1).find(q => q.id === id); const m = mgrById(it.mid);
+  const it = ALL_QUEUE.find(q => q.id === id) ?? queueFor(myCur().n).find(q => q.id === id); const m = mgrById(it.mid);
   closeOverlays();
   const el = document.createElement("div"); el.className = "scrim sheet-scrim"; el.id = "overlay";
   el.innerHTML = `<aside class="sheet" role="dialog" aria-modal="true"><div style="padding:24px 32px 32px">
@@ -865,7 +869,7 @@ function openReview(id, mode){
   document.body.appendChild(el); lucide.createIcons({nodes:[el]});
 }
 function AdminReview(){ return PageTitle("Проверка", "Что ждёт решения кураторов. Решение принимает только куратор руководителя; задерживающиеся — сверху.") + ReviewQueue(ALL_QUEUE, "observer"); }
-function CuratorReview(){ return PageTitle("Очередь проверки", "Задачи ваших подопечных, ожидающие решения. Старые — сверху.") + ReviewQueue(queueFor(1), "curator"); }
+function CuratorReview(){ return PageTitle("Очередь проверки", "Задачи ваших подопечных, ожидающие решения. Старые — сверху.") + ReviewQueue(queueFor(myCur().n), "curator"); }
 
 /* ===================== Переносы сроков ===================== */
 const DL_DATES = { 9:["2026-08-23","2026-09-06"], 10:["2026-09-18","2026-10-02"], 11:["2026-10-14","2026-10-28"], 12:["2026-11-09","2026-11-23"], 13:["2026-12-05","2026-12-19"], 14:["2026-12-31","2027-01-14"] };
@@ -1007,7 +1011,7 @@ function normPhone(v){ v = v.trim(); if (!v) return ""; return (v.startsWith("+"
 
 function openProfileSheet(){
   const u = S.user, id = profId();
-  const job = S.role === "mgr" ? [ABD_POS, LONG_CO] : S.role === "cur" ? [CURATORS[0].position] : [];
+  const job = S.role === "mgr" ? [ABD_POS, LONG_CO] : S.role === "cur" ? [myCur().position] : [];
   const F = (name, label, attrs, hint = "", opt = false) => `<div class="field"${name === "current" ? ' id="pfCur" hidden' : ""}><label class="label" for="pf-${name}">${label}${opt ? '<span class="opt">необязательно</span>' : ""}</label><input class="inp" id="pf-${name}" name="${name}" ${attrs}>${hint ? `<p class="hint">${hint}</p>` : ""}<p class="err" data-err="${name}" role="alert" hidden></p></div>`;
   const el = sheetOpen(`<div style="padding:24px 32px 32px"><div class="row between"><p class="eyebrow">${ROLE_TITLE[S.role]}</p><button type="button" class="round-btn" data-x aria-label="Закрыть">${ic("x")}</button></div>
     <h2 class="mt1" style="font-size:24px">Личные данные</h2>
@@ -1193,6 +1197,7 @@ function AccountPanel(u, kind){
 }
 function ManagerCard(id, tab, area){
   const m = mgrById(id); if (!m) return Empty("Не найдено");
+  if (area === "c" && m.curator !== myCur().id) return Empty("Не найдено", "Этот руководитель закреплён за другим куратором.");
   const admin = area === "a", base = admin ? `a.manager.${id}` : `c.ward.${id}`;
   tab = tab || "assessment";
   const tabs = [["assessment","Профиль оценки"],["plan","ИПР"],["history","История"]]; if (admin) tabs.push(["account","Учётная запись"]);
@@ -1494,7 +1499,7 @@ function render(keep){
   }
   if (!DB) {
     const want = r.area === "a" ? (S.role === "sa" ? "sa" : "hr") : r.area === "c" ? "cur" : "mgr";
-    S.role = want; S.user = withProfile(USERS[want], want);
+    S.role = want; S.user = demoUser(want);
     if (r.area === "a" && r.page === "hr" && S.role !== "sa") { S.role = "sa"; S.user = withProfile(USERS.sa, "sa"); }
   }
   const P = {
